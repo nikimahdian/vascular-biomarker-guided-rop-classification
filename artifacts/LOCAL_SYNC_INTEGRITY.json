@@ -1,0 +1,28 @@
+{
+  "split_sha256": "0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8",
+  "n_rows": 8870,
+  "n_groups": 414,
+  "group_overlap": false,
+  "phase5_test_auc": {
+    "A": 0.799926,
+    "B": 0.928008,
+    "C": 0.912315
+  },
+  "A_n": 1331,
+  "B_n": 1331,
+  "C_n": 1331,
+  "C_fusion_json": 0.912315,
+  "C_embedding_only_json": 0.916285,
+  "E2_val_auc": 0.9450671631178167,
+  "E2_test_skipped": true,
+  "E2_smoke": false,
+  "mask_png_count": 8960,
+  "has_branch_b_weight": true,
+  "has_excel": true,
+  "excluded": [
+    "data/raw images",
+    "data/vessel_prob_v1 (~20GB)",
+    "next_architecture *.pt checkpoints",
+    "loo/*.pth"
+  ]
+}
