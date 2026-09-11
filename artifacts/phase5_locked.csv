@@ -1,0 +1,6 @@
+claim,auc,role
+B_test_plus_ovr,0.928008,canonical_phase5_from_preds
+C_fusion_test_plus_ovr,0.912315,canonical_phase5_from_preds
+A_test_plus_ovr,0.799926,canonical_phase5_from_preds
+C_embedding_only_test,0.916285,canonical_phase5_from_json
+legacy_leaky_hybrid,0.98,invalid_do_not_cite

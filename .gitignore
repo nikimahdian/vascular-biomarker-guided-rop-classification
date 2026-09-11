@@ -1,0 +1,59 @@
+# Data + artifacts (large / regenerated)
+data/raw/
+data/masks/
+data/features/
+data/chunks/
+data/*.tar.gz
+data/*.zip
+weights/
+results/
+backup_from_server/
+plus/
+phase4_review/
+.venv/
+venv/
+
+# Archives / heavy generated binaries
+*.zip
+*.pdf
+
+# Huge local manifests (regenerate on studio)
+data/manifests/vessel_prob_v1.json
+data/splits/loo_tmp/
+
+# Local logs / temp
+logs_*.txt
+*.log
+scripts/_tailscale_test.txt
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Secrets
+.env
+.env.*
+*.pem
+credentials.json
+
+# LaTeX build junk
+*.aux
+*.bcf
+*.lof
+*.lol
+*.lot
+*.out
+*.toc
+*.run.xml
+*.synctex.gz
+*.synctex(busy)
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+
+# OS
+.DS_Store
+Thumbs.db
