@@ -1,0 +1,103 @@
+# Next-architecture experiments (E0–E5). Does not replace configs/config.yaml.
+# Canonical Phase 5 Branch B/C artifacts must never be written by this pipeline.
+
+experiment_id: E0
+allow_test_evaluation: false
+smoke_test: false
+
+expected_split_sha256: "0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8"
+canonical_split_status: "OFFICIAL_PHASE2_GROUPED_SPLIT"
+# Farabi groups are exam-level, not proven patient-level.
+farabi_grouping: exam_level_not_proven_patient
+
+paths:
+  splits_dir: data/splits
+  masks_dir: data/masks
+  weights_dir: weights
+  results_dir: results/next_architecture
+  vessel_prob_dir: data/vessel_prob_v1
+  vessel_derived_dir: data/vessel_derived_v1
+  manifests_dir: data/manifests
+  fold_manifest: data/manifests/next_architecture_folds_v1.json
+  probability_manifest: data/manifests/vessel_prob_v1.json
+
+backbone: efficientnet_b5
+pretrained: true
+resolution: 224
+in_channels: 3
+dropout: 0.5
+
+# E0 matches Branch B: 50 epochs, AdamW 1e-5, CE class-weighted, ReduceLROnPlateau.
+epochs: 50
+batch_size: 8
+grad_accumulation: 2
+lr: 1.0e-5
+weight_decay: 1.0e-4
+num_workers: 2
+mixed_precision: false          # MPS-safe default: off
+early_stopping_patience: 8
+scheduler_patience: 3
+scheduler_factor: 0.2
+
+seeds: [42, 43, 44, 45, 46]
+seed: 42
+
+plus_class_index: 2
+class_names: ["Normal", "Pre_Plus", "Plus"]
+
+augmentation:
+  # E0/E1 default matches Branch B (aspect-ratio distorting resize). Documented.
+  letterbox: false
+  aspect_ratio_distortion: true
+  random_horizontal_flip: true
+  random_rotation_deg: 10
+  color_jitter: [0.1, 0.1, 0.1]
+  no_random_crop: true          # posterior pole must not be cropped away
+
+loss:
+  plus_bce: 1.0
+  ordinal: 0.4
+  ranking: 0.2
+  biomarker_prediction: 0.0     # E6 disabled until anatomy-aware provenance exists
+  ranking_margin: 0.0
+  ranking_max_pairs: 64
+  ranking_prefer_within_source: true
+  ranking_cap_normal_pairs: true
+
+gate:
+  bias_init: -2.5
+  modality_dropout: 0.2
+  rgb_dim: 512
+  vessel_dim: 128
+  vessel_encoder: resnet18
+
+vessel:
+  version: v1
+  topology_threshold: 0.20      # documented; used only to derive skeleton/DT, not as clinical truth
+  probability_dtype: float16
+  cache_derived: true
+
+grouped_cv:
+  folds: 5
+  protocol: nested_grouped_cv
+  reduced_mode_label: official_train_val_not_nested_cv
+  use_official_split_as_reduced_mode: true
+
+calibration:
+  method: temperature_scaling
+  n_bins_ece: 15
+
+bootstrap:
+  n: 2000
+  smoke_n: 50
+  seed: 42
+
+smoke:
+  n_train: 8
+  n_val: 8
+  epochs: 1
+  batches: 2
+  batch_size: 2
+
+output:
+  namespace: results/next_architecture

@@ -1,0 +1,4 @@
+split,images,groups,normal,pre_plus,plus,source_farabi,source_farfum_rop,source_plus
+train,6211,290,4496,651,1064,987,1070,4154
+val,1328,62,981,140,207,211,229,888
+test,1331,62,982,140,209,212,230,889

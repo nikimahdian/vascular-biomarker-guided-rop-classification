@@ -1,0 +1,10 @@
+image_path,label,source,group_id,patient_id,exam_id,identity_level,split
+/Users/moniaz/niki/data/raw/farabi/Plus/No Plus/71b0074f-0957-4b31-9aea-1622add65f2b.14.jpg,0,farabi,farabi::71b0074f-0957-4b31-9aea-1622add65f2b,,farabi::71b0074f-0957-4b31-9aea-1622add65f2b,verified_exam_patient_unknown,train
+/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Normal_comp/066_F_GA26_BW810_PA36_DG3_PF0_D1_S04_3.jpg,0,plus,plus::066,plus::066,plus::066::S04::PA36,verified_patient_official_dataset,train
+/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/043_F_GA24_BW550_PA57_DG8_PF2_D1_S16_21.jpg,2,plus,plus::043,plus::043,plus::043::S16::PA57,verified_patient_official_dataset,train
+/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/043_F_GA24_BW550_PA50_DG8_PF2_D1_S15_30.jpg,2,plus,plus::043,plus::043,plus::043::S15::PA50,verified_patient_official_dataset,train
+/Users/moniaz/niki/data/raw/farfum_rop/patients/patient57/patient57/d8c56f37-c6df-4e0b-936c-07f4d8444319.1.jpg,2,farfum_rop,farfum_patient57,farfum_patient57,,verified_patient_official_metadata,train
+/Users/moniaz/niki/data/raw/farfum_rop/patients/patient57/patient57/d8c56f37-c6df-4e0b-936c-07f4d8444319.5.jpg,2,farfum_rop,farfum_patient57,farfum_patient57,,verified_patient_official_metadata,train
+/Users/moniaz/niki/data/raw/farfum_rop/patients/patient13/patient13/bb32f1f8-7a65-48b1-aee9-4349976cbbb7.18.jpg,0,farfum_rop,farfum_patient13,farfum_patient13,,verified_patient_official_metadata,val
+/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Normal_comp/139_F_GA24_BW550_PA38_DG9_PF0_D2_S08_9.jpg,0,plus,plus::139,plus::139,plus::139::S08::PA38,verified_patient_official_dataset,test
+/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/139_F_GA24_BW550_PA35_DG3_PF2_D2_S05_34.jpg,2,plus,plus::139,plus::139,plus::139::S05::PA35,verified_patient_official_dataset,test

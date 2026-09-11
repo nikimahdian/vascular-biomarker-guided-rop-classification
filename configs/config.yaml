@@ -1,0 +1,92 @@
+# Central config for the ROP Plus biomarker-vs-CNN thesis pipeline.
+# Edit paths/ids here; every script reads this file.
+
+seed: 42
+
+paths:
+  raw_dir: data/raw            # downloaded + unzipped datasets land here
+  splits_dir: data/splits      # train/val/test index CSVs (shared by both branches)
+  masks_dir: data/masks        # predicted vessel masks (PNG, 0/255)
+  weights_dir: weights         # segmentation + CNN checkpoints
+  features_dir: data/features  # Branch A biomarker tables (CSV)
+  results_dir: results         # metrics, plots, comparison tables
+
+data:
+  # Google Drive file ids (public). Used by src/data/download_data.py via gdown.
+  drive_ids:
+    farabi: "1wBEpNEBWHskI5_RWhRk5Q4RKG0FZHrra"   # Farabi_Dataset (own ROP data)
+    plus: "1VYZurWfTkv56U8H9hrJGFfNiko9zqNuj"      # Plus_dataset_main
+    bv_seg: "1TCel89piTQpT3Fcp0r7nU4zOhBfue3Vj"    # optional: only if retraining segmentation
+  # Public 3-class set (Normal / Pre-Plus / Plus) — proposal Pre-Plus supplement.
+  # Download: python -m src.data.download_farfum
+  farfum_dir: data/raw/farfum_rop
+  farfum_labels: data/raw/farfum_rop/metadata/Dataset_Labels.xlsx
+  # 3-class target (proposal): 0=Normal, 1=Pre_Plus, 2=Plus
+  class_names: ["Normal", "Pre_Plus", "Plus"]
+  # Keyword order in prepare_split: negative -> pre_plus -> plus
+  pre_plus_keywords: ["pre plus", "pre_plus", "preplus"]
+  plus_keywords: ["plus"]
+  negative_keywords: ["no plus", "no_plus", "noplus", "normal_comp", "normal"]
+  image_exts: [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp"]
+  test_size: 0.15
+  val_size: 0.15
+
+segmentation:
+  arch: MAnet                  # checkpoint best_weight_DeepLabV3+_resize_27 is MAnet (prior Drive naming)
+  encoder: resnet34
+  encoder_weights: imagenet
+  in_channels: 3
+  img_size: [256, 256]
+  # Path to a pretrained vessel-segmentation checkpoint (from prior work) OR trained by train.py.
+  weight_path: weights/best_weight_DeepLabV3+_resize_27
+  # Prior-work pretrained checkpoints on Google Drive (ids from the reference notebooks).
+  # download_weights.py fetches them into weights/. Filenames are assigned by Drive; inspect
+  # the folder afterwards and set weight_path to the DeepLabV3+ / MAnet file you want.
+  pretrained_weight_ids:
+    - "1LpCD3LQ-VXOUhy85bsts-lCZR33MVvJO"
+    - "1A6NCuDTh-Tf5yX9bO3yptZVvZhMjpDxu"
+    - "1gYuj67B2z7FirLV4eO8VK-3yYTw44OXD"
+    - "1KB86xZW6rN6ZBFA_ZH65uP_2ZW4akcuh"
+    - "16VEsJrdL9AKsrRmA4oebvb14PTVdwDpU"
+    - "1C10vshHA1iacib-ZrJ-_vhC2AgZpdIAS"
+    - "1x4vncMgeQe-fWR2lqOSO0nDLEB5Pp3G2"
+    - "1v_wlT2xKvx7TEYbBervu8I6UxpAZ3SsA"
+    - "1F_EjKmBmnNn9PvXL8o11uepjmVgsEzDB"
+    - "1VqKLd7XaHE_TclQHgnfFZdn94gVNLhwK"
+  # Inference post-processing
+  threshold: 0.20              # MAnet resnet34 default from prior work
+  min_area: 50                 # remove connected components smaller than this
+  morph_close_kernel: 3
+
+seg_train:                     # only used if you retrain segmentation (src/segmentation/train.py)
+  epochs: 60
+  batch_size: 8
+  lr: 1.0e-4
+  val_frac: 0.2
+
+biomarker:
+  # ROI for PVBM. 'disc' uses PVBM optic-disc segmentation to build zones; 'whole' uses full image.
+  roi: whole
+
+classify_a:                    # Branch A: biomarker table -> classifier
+  models: ["lightgbm", "xgboost", "random_forest", "logreg", "mlp"]
+  cv_folds: 5
+
+classify_b:                    # Branch B: image CNN (baseline, matches prior work)
+  backbone: efficientnet_b5    # any timm model, e.g. tf_efficientnetv2_m, resnet50
+  img_size: 224
+  epochs: 50
+  batch_size: 16
+  lr: 1.0e-5
+  weight_decay: 1.0e-4
+  use_focal_loss: false
+  num_workers: 4
+
+interpret:
+  gradcam_samples: 12          # number of test images to render Grad-CAM overlays for
+
+eval:
+  patient_level_split: true    # group verified patients; Farabi uses verified RetCam Exam IDs
+  threshold_method: youden     # youden | f1 — tuned on val only
+  model_select: val_f1_plus    # val_f1_plus | val_auc_plus — pick best model on val
+  bootstrap_n: 1000

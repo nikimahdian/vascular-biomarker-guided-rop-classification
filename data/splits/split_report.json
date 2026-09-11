@@ -1,0 +1,69 @@
+{
+  "status": "OFFICIAL_PHASE2_GROUPED_SPLIT",
+  "created_at": "2026-08-27T01:57:12+0330",
+  "identity_parser": {
+    "plus": "official unique patient ID: leading filename integer",
+    "farfum_rop": "official spreadsheet patient ID",
+    "farabi": "Native RetCam Exam ID: UUID before final image-number suffix; patient ID unavailable"
+  },
+  "exclusions": {
+    "duplicate_identity_rows": 54,
+    "quality_rows": 36,
+    "group_ids": [
+      "plus::040",
+      "plus::041"
+    ],
+    "triggering_exact_hash_groups": 19
+  },
+  "checks": {
+    "rows": 8870,
+    "unique_paths": 8870,
+    "groups": 414,
+    "group_overlap": {
+      "train_val": 0,
+      "train_test": 0,
+      "val_test": 0
+    }
+  },
+  "counts": [
+    {
+      "split": "train",
+      "images": 6211,
+      "groups": 290,
+      "normal": 4496,
+      "pre_plus": 651,
+      "plus": 1064,
+      "source_farabi": 987,
+      "source_farfum_rop": 1070,
+      "source_plus": 4154
+    },
+    {
+      "split": "val",
+      "images": 1328,
+      "groups": 62,
+      "normal": 981,
+      "pre_plus": 140,
+      "plus": 207,
+      "source_farabi": 211,
+      "source_farfum_rop": 229,
+      "source_plus": 888
+    },
+    {
+      "split": "test",
+      "images": 1331,
+      "groups": 62,
+      "normal": 982,
+      "pre_plus": 140,
+      "plus": 209,
+      "source_farabi": 212,
+      "source_farfum_rop": 230,
+      "source_plus": 889
+    }
+  ],
+  "hashes": {
+    "all.csv": "0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8",
+    "train.csv": "407300a82dc888ece7f6dcd182896ad57498b784da99f2bb3d6f6853b8f9864d",
+    "val.csv": "8d6a84b9137eda9829c15783d876657b7d1c4a4f847217d5bc1e5a4a87e09ad9",
+    "test.csv": "93b8968cf135208d3f13b755d7d47408f2601619773d20fa234332927e6885f5"
+  }
+}
