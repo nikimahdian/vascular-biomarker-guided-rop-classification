@@ -92,6 +92,36 @@ A leave-one-source-out holdout of **Farabi** is the hard domain. The best develo
   <img src="docs/figures/loso_farabi_roc_e2_e8.png" width="420" alt="LOSO Farabi ROC">
 </p>
 
+### External validation of the measurement layer (HVDROPDB)
+
+The vessel mask was never scored against an expert reference, because no expert masks exist for the Farabi data. That gap is now measured externally on [HVDROPDB](https://doi.org/10.1016/j.dib.2023.109839) — 100 ROP images with manually annotated vessel masks (50 RetCam 640×480, 50 Neo 2040×2040) plus 100 expert optic-disc masks.
+
+`scripts/hvdro_seg_validation.py` runs the deployed MAnet (same weights, `img_size` 256, threshold 0.20, same post-processing) with no retraining:
+
+| Camera | Dice (this project) | Dice (authors' AG U-Net) | Recall | Precision |
+|---|---|---|---|---|
+| RetCam (n=50) | **0.754** | 0.52 | 0.814 | 0.709 |
+| Neo (n=50) | **0.473** | 0.66 | 0.338 | 0.816 |
+
+Two things follow. On the camera family the project's own data comes from, the measurement layer is *above* the published reference — so the weakness of Branch A is not a broken mask. On the second camera it collapses, with precision high (0.816) but recall low (0.338): the same camera-dependence the frozen embedding shows (source one-vs-rest AUC 0.9998) is present in the mask as well.
+
+Raising the inference resolution does **not** fix it — Dice falls monotonically (RetCam 0.754 → 0.456 → 0.264 at 256/512/1024), because the weights were fit at 256.
+
+The assumed optic-disc geometry (`roi: whole`, centre = image centre, radius = `min(h,w)/8`) was checked against the expert disc masks: the true disc centre sits on average **7.1–7.5 true disc radii** from the image centre and the assumed radius is **2.35–2.84×** the true one. Framing differs between datasets, so this is not an exact error for the project's data — it shows the assumption is not a general property of ROP imaging and cannot be verified without expert masks.
+
+`scripts/hvdro_threshold.py` (threshold re-selection, no training) and `scripts/hvdro_few_shot_adaptation.py` (5-fold few-shot adaptation with early stopping and threshold chosen on an inner split) test whether the gap is cheap to close. Same images, same five folds, so the comparison is paired:
+
+| Camera | zero-shot @ 0.20 | zero-shot @ re-selected threshold | fine-tuned (≈40 masks/fold) |
+|---|---|---|---|
+| RetCam (n=50) | 0.754 | 0.755 (thr 0.29) | 0.655 (**−0.099**) |
+| Neo (n=50) | 0.473 | **0.579** (thr 0.005) | 0.546 (+0.074) |
+
+**Re-selecting the decision threshold recovers more than fine-tuning does, at zero cost.** On Neo it adds **+0.106 Dice** (p<0.001, recall 0.338 → 0.566) with no weights changed; on RetCam it is a no-op (the deployed 0.20 is already near-optimal there). Fine-tuning is a strict *trade*: it gains on the camera the model is bad at and loses badly on the camera it is good at — and training on both cameras at once repeats the same pattern (Neo 0.577, RetCam 0.623). The gap is substantially a **calibration** problem, not only a representation problem.
+
+This is why a multi-camera deployment should calibrate its decision threshold per camera, and why "just fine-tune on a few expert masks" is not the cheap fix it looks like.
+
+Outputs land in `results/hvdro_validation/`. All of it is external validation only: no project data, no locked test, no weights are touched.
+
 ---
 
 ## How it works
