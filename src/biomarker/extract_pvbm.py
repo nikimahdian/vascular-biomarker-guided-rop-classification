@@ -31,7 +31,46 @@ from tqdm import tqdm
 
 from src.utils.common import append_csv_rows, ensure_dirs, load_config
 
-META_COLS = {"image_path", "mask_path", "label", "split", "source"}
+META_COLS = {
+    "image_path",
+    "mask_path",
+    "label",
+    "split",
+    "source",
+    "group_id",
+    "patient_id",
+    "exam_id",
+    "identity_level",
+}
+
+GROUP_COLS = ["group_id", "patient_id", "exam_id", "identity_level"]
+
+
+def attach_grouping(out_path: Path, cfg: dict) -> None:
+    """Merge grouping metadata from the canonical split into the feature table.
+
+    The feature table must carry the grouping identifiers, otherwise Branch A/C evaluation
+    falls back to image-level bootstrap uncertainty rather than group-level. The mask manifest
+    does not contain these columns, so they are joined from the canonical split here.
+    """
+    all_path = cfg["paths"]["splits_dir"] / "all.csv"
+    if not all_path.exists():
+        print(f"[warn] {all_path} missing; feature table will have no grouping metadata")
+        return
+    splits = pd.read_csv(all_path)
+    keep = [c for c in ["image_path"] + GROUP_COLS if c in splits.columns]
+    if len(keep) < 2:
+        print("[warn] canonical split has no grouping columns; skipping")
+        return
+    meta = splits[keep].drop_duplicates(subset="image_path")
+    feats = pd.read_csv(out_path)
+    feats = feats.drop(columns=[c for c in GROUP_COLS if c in feats.columns])
+    merged = feats.merge(meta, on="image_path", how="left", validate="one_to_one")
+    unmatched = int(merged[keep[1]].isna().sum())
+    if unmatched:
+        print(f"[warn] {unmatched} feature rows had no split match; grouping left empty for them")
+    merged.to_csv(out_path, index=False)
+    print(f"[grouping] attached {keep[1:]} to {out_path}")
 
 GEOM_COLUMNS = [
     "area",
@@ -198,6 +237,7 @@ def main() -> None:
 
     if partial_path.exists():
         partial_path.rename(out_path)
+    attach_grouping(out_path, cfg)
     n_feat = len(
         [c for c in pd.read_csv(out_path, nrows=1).columns if c not in META_COLS]
     )

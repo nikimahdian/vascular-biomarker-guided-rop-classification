@@ -137,6 +137,11 @@ Edit paths in `configs/config.yaml`, then run in order:
 python -m src.data.prepare_split
 python -m src.segmentation.infer_masks
 python -m src.biomarker.extract_pvbm
+# extract_pvbm now writes the grouping metadata itself (group_id, patient_id, exam_id,
+# identity_level). For a feature table produced before that change, re-attach it here — without
+# these columns the Branch A/C evaluation silently falls back to IMAGE-level bootstrap
+# uncertainty instead of group-level:
+python -m src.data.refresh_feature_splits
 python -m src.classify.branch_a_tabular
 python -m src.classify.branch_b_cnn
 python -m src.classify.branch_c_hybrid
@@ -152,6 +157,9 @@ bash scripts/run_next_architecture_ladder.sh
 ```bash
 pytest -q
 ```
+
+Embedding cache identity, row order, and its one hard rule (never cross-validate over train rows):
+`docs/EMBEDDING_CACHE_CONTRACT.md`.
 
 Raw images, masks, features, full `results/`, and weights are **not** in Git — regenerate on your machine or compute host (see `.gitignore`).
 
