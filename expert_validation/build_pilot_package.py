@@ -397,24 +397,17 @@ one of the purposes of this pilot.
 """
     (PKG / "README_FIRST.md").write_text(readme, encoding="utf-8")
 
-    # ---- 10. annotation manual, verbatim + examples ----------------------------
-    # The frozen manual was written for the full 120-image study. The body is shipped unedited;
-    # a pilot header states the one factual difference (image count) so nothing in the frozen
-    # procedure is rewritten.
-    manual_md = (EV / "ANNOTATION_MANUAL.md").read_text(encoding="utf-8")
-    pilot_header = (
-        "> **PILOT PACKAGE — 30 images.** This package contains **30** fundus photographs, the\n"
-        "> first cohort of the study. The procedure below is the frozen annotation procedure and\n"
-        "> applies unchanged. Where the text refers to 120 images or to a final validation cohort,\n"
-        "> read **30 images** for this pilot. Everything else — the seven steps per image, the\n"
-        "> vessel and disc rules, the uncertainty rules, the grading sheet — is exactly as written.\n\n"
-        "---\n\n"
-    )
-    (PKG / "ANNOTATION_MANUAL.md").write_text(pilot_header + manual_md, encoding="utf-8")
+    # ---- 10. annotation manual -------------------------------------------------
+    # The frozen master (ANNOTATION_MANUAL.md) is never edited. The package ships
+    # ANNOTATION_MANUAL_PILOT.md, an operational derivative whose ONLY body change is the workload
+    # count (120 -> 30); scripts/make_pilot_manual.py asserts that diff is exactly one line.
+    master_manual = (EV / "ANNOTATION_MANUAL.md").read_text(encoding="utf-8")
+    pilot_manual = (EV / "ANNOTATION_MANUAL_PILOT.md").read_text(encoding="utf-8")
+    (PKG / "ANNOTATION_MANUAL.md").write_text(pilot_manual, encoding="utf-8")
 
     ok_r = render_pdf(readme, PKG / "README_FIRST.pdf", "Blinded pilot annotation study")
-    ok_m = render_pdf(pilot_header + manual_md, PKG / "ANNOTATION_MANUAL.pdf",
-                      "Annotation Manual - version 1.0 (pilot)")
+    ok_m = render_pdf(pilot_manual, PKG / "ANNOTATION_MANUAL.pdf",
+                      "Annotation Manual - version 1.0 (pilot edition)")
     print(f"  PDFs: README_FIRST.pdf={'ok' if ok_r else 'FAILED'} "
           f"({(PKG / 'README_FIRST.pdf').stat().st_size if ok_r else 0} bytes), "
           f"ANNOTATION_MANUAL.pdf={'ok' if ok_m else 'FAILED'} "

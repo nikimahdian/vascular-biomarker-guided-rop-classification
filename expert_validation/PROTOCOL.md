@@ -327,7 +327,7 @@ re-scope to a pilot-only report rather than proceeding to the final cohort.
 
 **Before.** Scrub EXIF and any burned-in identifiers; verify no patient name, no visible ID, no
 laterality text that identifies a patient; rename to `ROP_0001`…`ROP_0120`; split the key
-(`blinding_key.csv`) from the delivered pack (`manifest_blinded.csv`). Ship the two files
+(`blinding_key.csv`) from the delivered pack (`pilot_manifest_blinded.csv`). Ship the two files
 separately. Use the institution's approved transfer channel if the images fall under a data-use
 agreement.
 
@@ -350,9 +350,15 @@ rather than folded into the final numbers.
 ```
 expert_validation/
 ├── PROTOCOL.md                 this document
-├── ANNOTATION_MANUAL.md        grader-facing instructions
-├── manifest_blinded.csv        study_id, cohort           <- delivered to the grader
+├── ANNOTATION_MANUAL.md        the frozen master, written for the full 120-image study
+├── ANNOTATION_MANUAL_PILOT.md  operational derivative for the 30-image pilot; the only body
+│                               change is the workload count. scripts/make_pilot_manual.py
+│                               asserts that diff is exactly one line.
+├── manifest_cohorts_internal.csv  study_id, cohort for all 120   <- internal, not delivered
+├── pilot_manifest_blinded.csv     the 30 pilot study_ids         <- delivered to the grader
+├── final_manifest_blinded.csv     the 90 final study_ids         <- internal until phase 3
 ├── blinding_key.csv            study_id -> image_path, label, source, split, group_id, flags
+│                               PRIVATE. Never delivered, never committed (gitignored).
 ├── MANIFEST_SHA256.txt         hash of the frozen selection
 ├── sampling_summary.csv        realised allocation
 ├── images/                     ROP_0001.png ...

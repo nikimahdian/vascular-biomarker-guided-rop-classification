@@ -67,3 +67,22 @@ expert_validation/grader_*/
 expert_validation/adjudicated/
 expert_validation/*.pdf
 
+
+# --- Sensitive research metadata. Never commit. -------------------------------------------
+# The private study key maps blinded IDs to source, label, split and local patient paths.
+expert_validation/blinding_key.csv
+*blinding_key*.csv
+# Dataset manifest tables carry patient/exam identifiers, labels and absolute local paths.
+# They are held privately; regenerate locally with src/data/prepare_split.
+data/splits/all.csv
+data/splits/train.csv
+data/splits/val.csv
+data/splits/test.csv
+data/splits/group_assignments.csv
+data/splits/excluded_ambiguous_exact_duplicates.csv
+data/splits/missing_masks.csv
+data/splits/rerun_masks.csv
+# Clinical images: fundus photographs, masks, overlays and Grad-CAM renders.
+docs/figures/vessel_overlay*.png
+docs/figures/gradcam_*.png
+*.zip
