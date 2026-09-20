@@ -1,8 +1,19 @@
 # Security remediation
 
+**Status: Pilot technically ready, governance clearance pending.**
+The clinician pilot package is built, validated and pixel-verified. It should not be sent until the
+two outstanding items in section *RESIDUAL EXPOSURE* are closed.
+
 **Date of remediation:** 2026-09-20
 **Scope:** removal of sensitive research metadata from the public repository and from its reachable
 git history.
+
+**Follow-ups, outside this repository:**
+
+| item | owner | document |
+|---|---|---|
+| Garbage-collect the old server-side objects | repository owner (GitHub account required) | `docs/GITHUB_SUPPORT_PURGE_REQUEST.md` |
+| Record and assess the exposure | institutional data governance | `docs/DATA_GOVERNANCE_NOTIFICATION.md` |
 
 ## What category of file was removed
 
