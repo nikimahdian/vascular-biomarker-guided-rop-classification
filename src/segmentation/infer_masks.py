@@ -2,12 +2,26 @@
 
 Reads data/splits/all.csv, runs the segmenter, applies the prior-work
 post-processing (threshold -> small-component removal -> morphological close),
-and writes one PNG (0/255) per image into paths.masks_dir. A manifest CSV maps
-image_path -> mask_path and is consumed by the biomarker step.
+and writes one PNG (0/255) per image into the generation's own output store. A
+manifest CSV maps image_path -> mask_path and is consumed by the biomarker step.
+
+Every run is bound to an immutable generation contract
+(configs/segmentation_generation_<id>.yaml) that pins the checkpoint bytes, the
+inference code bytes, the config bytes, preprocessing, threshold and
+postprocessing. The contract is re-verified at startup; a mismatch aborts the
+run instead of producing masks of unknown provenance.
+
+A mask is never overwritten silently. An existing output path is an error unless
+--allow-overwrite is passed, and a generation whose store is frozen cannot be
+written to at all - such a generation must be superseded by a new generation id.
+
+The manifest records scientific identity by content, not by filename:
+(image_sha256, generation_id, mask_sha256).
 
 Usage:
-    python -m src.segmentation.infer_masks
-    python -m src.segmentation.infer_masks --weight weights/best_weight_MAnet_res34_resize_31 --arch MAnet --threshold 0.2
+    python -m src.segmentation.infer_masks --generation SEG_CURRENT_V1
+    python -m src.segmentation.infer_masks --generation SEG_NEXT_V1 \
+        --weight weights/best_weight_MAnet_res34_resize_31 --arch MAnet --threshold 0.2
 """
 from __future__ import annotations
 
@@ -25,8 +39,22 @@ from PIL import Image
 from torchvision import transforms
 from tqdm import tqdm
 
+from src.segmentation.generation import (
+    GenerationError,
+    MaskOverwriteError,
+    assert_store_writable,
+    assert_writable,
+    content_identity,
+    load_contract,
+    output_store,
+    sha256_file,
+    verify_contract,
+)
 from src.segmentation.models import build_model
 from src.utils.common import ensure_dirs, get_device, load_config
+
+DEFAULT_GENERATION = "SEG_CURRENT_V1"
+
 
 
 def post_process(prob: np.ndarray, threshold: float, min_area: int, close_k: int) -> np.ndarray:
@@ -118,6 +146,17 @@ def main() -> None:
     ap.add_argument("--arch", default=sc["arch"])
     ap.add_argument("--encoder", default=sc["encoder"])
     ap.add_argument("--threshold", type=float, default=sc["threshold"])
+    ap.add_argument(
+        "--generation",
+        default=DEFAULT_GENERATION,
+        help="immutable generation id; must have a contract under configs/ (default: %(default)s)",
+    )
+    ap.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        default=False,
+        help="destructive override: permit clobbering an existing mask file (default: off)",
+    )
     ap.add_argument("--index", default=str(cfg["paths"]["splits_dir"] / "all.csv"))
     ap.add_argument(
         "--resume",
@@ -158,6 +197,39 @@ def main() -> None:
             "Put a pretrained checkpoint there, or train one with src.segmentation.train."
         )
 
+    # ---- generation binding: refuse to run against an unpinned or mismatched state ----
+    contract = load_contract(cfg, args.generation)
+    observed = verify_contract(cfg, contract)
+    declared_weight = Path(contract["checkpoint_path"])
+    if not declared_weight.is_absolute():
+        declared_weight = cfg["_root"] / declared_weight
+    if weight_path.resolve() != declared_weight.resolve():
+        raise SystemExit(
+            f"--weight {weight_path} is not the checkpoint of generation {args.generation} "
+            f"({declared_weight}). A different checkpoint is a different generation and needs "
+            "its own generation id and contract."
+        )
+    if float(args.threshold) != float(contract["threshold"]):
+        raise SystemExit(
+            f"--threshold {args.threshold} != contract threshold {contract['threshold']} for "
+            f"{args.generation}. A different threshold is a different generation."
+        )
+    if list(sc["img_size"]) != list(contract["input_size"]):
+        raise SystemExit(
+            f"config input size {list(sc['img_size'])} != contract input size "
+            f"{list(contract['input_size'])} for {args.generation}."
+        )
+    assert_store_writable(contract, allow_overwrite=args.allow_overwrite)
+    generation_masks_dir = output_store(cfg, contract)
+    generation_masks_dir.mkdir(parents=True, exist_ok=True)
+    print(
+        f"[generation] {args.generation}  "
+        f"checkpoint={observed['checkpoint_sha256'][:16]}  "
+        f"code={observed['inference_script_sha256'][:16]}  "
+        f"config={observed['config_sha256'][:16]}  "
+        f"threshold={args.threshold}  store={generation_masks_dir}"
+    )
+
     model = build_model(
         args.arch, args.encoder, encoder_weights=None, in_channels=sc["in_channels"], classes=1
     ).to(device)
@@ -171,7 +243,7 @@ def main() -> None:
     )
 
     df = pd.read_csv(args.index)
-    masks_dir: Path = cfg["paths"]["masks_dir"]
+    masks_dir: Path = generation_masks_dir
     out = masks_dir / "mask_manifest.csv"
     records: list[dict] = []
     prob_records: list[dict] = []
@@ -242,6 +314,24 @@ def main() -> None:
                 ),
             )
 
+    def _record(img_path: str, mask_path: Path, row) -> dict:
+        """Manifest record whose scientific identity is content, not filename."""
+        rec = {
+            "image_path": img_path,
+            "mask_path": str(mask_path),
+            "label": int(row["label"]),
+            "split": row["split"],
+            "source": row.get("source", ""),
+            "generation_id": args.generation,
+        }
+        try:
+            rec.update(content_identity(img_path, str(mask_path)))
+        except OSError:
+            rec["image_sha256"] = ""
+            rec["mask_sha256"] = ""
+            rec["mask_bytes"] = -1
+        return rec
+
     for _, row in tqdm(df.iterrows(), total=len(df), desc="masks"):
         img_path = row["image_path"]
         prob_path_expected = None
@@ -255,15 +345,7 @@ def main() -> None:
         existing = find_existing_mask(masks_dir, img_path) if args.resume else None
         mask_path = existing if existing is not None else (masks_dir / unique_mask_name(img_path))
         if existing is not None and not need_prob:
-            records.append(
-                {
-                    "image_path": img_path,
-                    "mask_path": str(mask_path),
-                    "label": int(row["label"]),
-                    "split": row["split"],
-                    "source": row.get("source", ""),
-                }
-            )
+            records.append(_record(img_path, mask_path, row))
             done_images.add(img_path)
             _ensure_prob_record()
             skipped += 1
@@ -312,16 +394,15 @@ def main() -> None:
                 },
             )
 
+        # Default behaviour is ERROR, not overwrite: a mask already on disk is another
+        # run's bytes until an explicit destructive override says otherwise.
+        try:
+            assert_writable(mask_path, allow_overwrite=args.allow_overwrite,
+                            generation_id=args.generation)
+        except MaskOverwriteError as exc:
+            raise SystemExit(str(exc)) from exc
         cv2.imwrite(str(mask_path), mask)
-        records.append(
-            {
-                "image_path": img_path,
-                "mask_path": str(mask_path),
-                "label": int(row["label"]),
-                "split": row["split"],
-                "source": row.get("source", ""),
-            }
-        )
+        records.append(_record(img_path, mask_path, row))
         done_images.add(img_path)
         new_since_ckpt += 1
         if new_since_ckpt >= args.checkpoint_every:

@@ -1,4 +1,4 @@
-﻿# Data + artifacts (large / regenerated)
+# Data + artifacts (large / regenerated)
 data/raw/
 data/masks/
 data/features/
@@ -86,3 +86,10 @@ data/splits/rerun_masks.csv
 docs/figures/vessel_overlay*.png
 docs/figures/gradcam_*.png
 *.zip
+
+# --- Private audit and recovery scratch. Never commit. -------------------------------------
+# Patient-linked inventories, recovered checkpoint candidates and reproduction scratch stores.
+# Scientific identity of these tables is published as hashes only (see artifacts/).
+_private/
+_private_audit/
+**/repro_scratch/

@@ -1,0 +1,104 @@
+{
+  "generation_id": "SEG_CURRENT_V1",
+  "classification": "CURRENT_MASK_GENERATION",
+  "not_historical_equivalent": true,
+  "historical_counterpart": {
+    "name": "Aug-27 generation",
+    "status": "IRRECOVERABLE",
+    "note": "produced data/features/biomarker_features.csv on 2026-08-27; not reproducible by any available checkpoint (see docs/HISTORICAL_SEGMENTATION_RECOVERY.md)"
+  },
+  "created_at": "2026-09-20T22:43:42+0330",
+  "contract_file": "configs/segmentation_generation_current_v1.yaml",
+  "contract_sha256": "c0be250323acc36ff488193ad014eb18725a523b2c8ae9d1593bd190807f6966",
+  "population_n": 8870,
+  "canonical_population_fingerprint": "0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8",
+  "source_counts": {
+    "plus": 5931,
+    "farfum_rop": 1529,
+    "farabi": 1410
+  },
+  "split_counts": {
+    "train": 6211,
+    "test": 1331,
+    "val": 1328
+  },
+  "checkpoint_path": "weights/best_weight_DeepLabV3+_resize_27",
+  "checkpoint_sha256": "c373f53813ee60b89651a04a98bc5f1d6bc60a5a50f45c4e10f42475650d5374",
+  "checkpoint_size_bytes": 127358298,
+  "checkpoint_note": "MAnet weights under a DeepLabV3+-shaped filename; byte-identical to the Google Drive artifact best_weight_MAnet_res34_resize_31",
+  "architecture": "MAnet",
+  "encoder": "resnet34",
+  "config_sha256": "77a6c9230fd8b6f7230e1085d3415f46ece862d3e160ace983a1be83b97f0a60",
+  "inference_code_sha256": "b76f820025353841908111674a9ca3460776f7add496d6c2a27ff4bbf09f1a1b",
+  "inference_code_file": "src/segmentation/infer_masks.py",
+  "preprocessing": {
+    "input_size": [
+      256,
+      256
+    ],
+    "resize_policy": "torchvision Resize((256,256)), bilinear, before ToTensor",
+    "aspect_ratio_policy": "not preserved; source geometries stretched to square",
+    "normalization": "none beyond ToTensor scaling to [0,1]"
+  },
+  "decision_rule": {
+    "activation": "sigmoid once",
+    "threshold": 0.2,
+    "binarization_operator": "strict greater-than",
+    "connected_component_policy": "8-connectivity, components below min area removed",
+    "minimum_component_area": 50,
+    "morphological_operations": "MORPH_CLOSE 3x3 after component removal"
+  },
+  "output": {
+    "binary_output_values": [
+      0,
+      255
+    ],
+    "dtype": "uint8 grayscale PNG",
+    "output_resize_policy": "cv2.resize INTER_NEAREST to source size",
+    "store": "data/masks",
+    "store_frozen": true
+  },
+  "mask_count": 8870,
+  "mask_unique_sha256": 8870,
+  "input_unique_image_sha256": 8870,
+  "aggregate_dimensions": {
+    "640x480": 2516,
+    "1240x1240": 2446,
+    "1280x960": 1382,
+    "1440x1080": 969,
+    "1600x1200": 1557
+  },
+  "vessel_pixel_total": 694116606,
+  "identity_ok": true,
+  "identity_tuple": "(image_sha256, generation_id, mask_sha256)",
+  "store_note": "the frozen store holds 8960 PNGs; 8870 are the SEG_CURRENT_V1 canonical masks and 90 belong to images outside the canonical cohort. Those 90 are left untouched and are not part of this generation's inventory.",
+  "reproducibility": {
+    "subset_n": 300,
+    "subset_bitwise_identical_n": 300,
+    "subset_covers_all_sources": true,
+    "subset_covers_all_splits": true,
+    "subset_covers_all_geometries": true,
+    "subset_strata_covered": 16,
+    "subset_strata_total": 16,
+    "full_reproduction_run": true,
+    "full_reproduction_n": 8870,
+    "full_bitwise_identical_n": 8870,
+    "deterministic": true,
+    "gate": "PASS",
+    "method": "re-ran the frozen recipe under the SEG_CURRENT_V1_REPRO contract into a scratch directory; the frozen store was never written to"
+  },
+  "pairing": {
+    "strict_image_mask_pairing": "PASS",
+    "images": 8870,
+    "resolved_exactly_one": 8870,
+    "resolution_errors": 0,
+    "mismatches_vs_pinned": 0,
+    "resolver": "src/segmentation/mask_pairing.py::resolve_mask (exact stem parse, never first-match, never prefix-match)"
+  },
+  "overwrite_protection": {
+    "default_behaviour": "ERROR on existing output",
+    "frozen_store_refuses_write": true,
+    "allow_overwrite_flag_required_to_clobber": true,
+    "new_state_requires_new_generation_id": true
+  }
+}

@@ -1,0 +1,86 @@
+# Reproducibility-check contract. NOT a scientific generation.
+#
+# It exists so the H gate can re-run the SEG_CURRENT_V1 recipe into a scratch directory
+# without writing a single byte into the frozen canonical store. Every scientific field is
+# identical to configs/segmentation_generation_current_v1.yaml; only the id, the purpose and
+# the output store differ. The verifier re-checks the checkpoint, code and config hashes, so
+# this contract can only pass while the state is in fact the SEG_CURRENT_V1 state.
+#
+# Do not cite masks produced under this id. A passing check means "the frozen bytes are
+# reproducible from the frozen state", nothing more.
+
+generation_id: SEG_CURRENT_V1_REPRO
+created_at: "2026-09-20T22:30:00+0330"
+purpose: reproducibility_check
+not_a_scientific_generation: true
+equivalent_to: SEG_CURRENT_V1
+store_frozen: false
+output_store: _private_audit/repro_scratch/SEG_CURRENT_V1_REPRO
+store_layout: per_generation_directory
+
+# --- model identity (identical to SEG_CURRENT_V1) -------------------------------------
+architecture: MAnet
+architecture_source: "segmentation_models_pytorch MAnet"
+encoder: resnet34
+encoder_weights_at_inference: null
+in_channels: 3
+classes: 1
+checkpoint_path: weights/best_weight_DeepLabV3+_resize_27
+checkpoint_sha256: c373f53813ee60b89651a04a98bc5f1d6bc60a5a50f45c4e10f42475650d5374
+checkpoint_size_bytes: 127358298
+checkpoint_state_dict_entries: 366
+checkpoint_note: "identical bytes to SEG_CURRENT_V1; verified at run time"
+
+# --- preprocessing --------------------------------------------------------------------
+input_loader: "PIL.Image.open(path).convert('RGB')"
+input_size: [256, 256]
+resize_policy: >-
+  torchvision.transforms.Resize((256, 256)) on the RGB PIL image, default bilinear
+  interpolation, applied before ToTensor
+aspect_ratio_policy: >-
+  aspect ratio is NOT preserved; all source geometries are stretched to a 256x256 square
+normalization: >-
+  NONE beyond ToTensor scaling to [0, 1]. No ImageNet or dataset mean/std normalisation.
+
+# --- decision rule --------------------------------------------------------------------
+activation: "torch.sigmoid on the single-channel model output"
+logit_handling: "raw logits are passed through sigmoid exactly once; no temperature or clipping"
+threshold: 0.20
+binarization_operator: "strict greater-than: (prob > threshold)"
+connected_component_policy: >-
+  cv2.connectedComponentsWithStats(connectivity=8) on the binarised 256x256 map; every
+  component with area < minimum_component_area is removed
+minimum_component_area: 50
+morphological_operations: >-
+  cv2.morphologyEx(MORPH_CLOSE) with a 3x3 uint8 kernel of ones, applied AFTER component
+  removal
+postprocessing_order: "threshold -> connected-component removal -> morphological close"
+postprocessing_implementation: "src/segmentation/infer_masks.py::post_process"
+
+# --- output ---------------------------------------------------------------------------
+binary_output_values: [0, 255]
+output_dtype: "uint8, single channel, PNG written by cv2.imwrite"
+output_resize_policy: >-
+  cv2.resize(mask_256, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST) back to the
+  source image size
+filename_policy: >-
+  "<image_stem>_<md5(image_path)[:8]>.png"; provenance is content identity, never filename
+mask_readback_threshold: ">127, in src/biomarker/extract_pvbm.py::load_binary_mask"
+
+# --- device ---------------------------------------------------------------------------
+device_policy: "src.utils.common.get_device(): cuda if available, else mps, else cpu"
+device_used_for_this_generation: "mps (Apple silicon) on the analysis host"
+
+# --- code and config identity ---------------------------------------------------------
+inference_script: src/segmentation/infer_masks.py
+inference_script_sha256: b76f820025353841908111674a9ca3460776f7add496d6c2a27ff4bbf09f1a1b
+config_sha256: 77a6c9230fd8b6f7230e1085d3415f46ece862d3e160ace983a1be83b97f0a60
+
+# --- population -----------------------------------------------------------------------
+canonical_population_fingerprint: 0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8
+canonical_population_n: 8870
+canonical_population_file: data/splits/all.csv
+canonical_mask_mapping_file: data/masks/mask_manifest_canonical_v1.csv
+canonical_mask_mapping_sha256: b3bc6538026d6ad0fc1342043e5ca2d6de56662233bf6d0709d9d875f24b21cd
+source_counts: {plus: 5931, farfum_rop: 1529, farabi: 1410}
+split_counts: {train: 6211, val: 1328, test: 1331}
