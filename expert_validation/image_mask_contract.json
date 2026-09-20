@@ -1,0 +1,97 @@
+{
+  "contract": "expert_pilot_image_mask_contract",
+  "version": "1.0",
+  "purpose": "Machine-readable QC specification for the masks returned by the expert annotator. Consumed by expert_validation/analysis/validate_annotations.py and scripts/validate_expert_pilot_package.py.",
+  "image": {
+    "location": "images/",
+    "filename": "{study_id}.png",
+    "study_id_pattern": "^ROP_[0-9]{4}$",
+    "format": "PNG",
+    "mode": "RGB",
+    "dimensions": "identical to the private source image; never resized, cropped, rotated or re-encoded",
+    "metadata": "none permitted: no EXIF, IPTC, XMP or PNG textual chunk"
+  },
+  "vessel_mask": {
+    "location": "vessel_masks/",
+    "filename": "{study_id}.png",
+    "pairs_with": "images/{study_id}.png",
+    "format": "PNG",
+    "channels": 1,
+    "dtype": "uint8",
+    "allowed_values": [0, 255],
+    "background_value": 0,
+    "foreground_value": 255,
+    "dimensions": "must equal the paired image width and height exactly",
+    "required_when": "vessels_gradable == TRUE",
+    "optional_when": "vessels_gradable == FALSE; a missing file is valid and expected"
+  },
+  "disc_mask": {
+    "location": "disc_masks/",
+    "filename": "{study_id}.png",
+    "pairs_with": "images/{study_id}.png",
+    "format": "PNG",
+    "channels": 1,
+    "dtype": "uint8",
+    "allowed_values": [0, 255],
+    "background_value": 0,
+    "foreground_value": 255,
+    "dimensions": "must equal the paired image width and height exactly",
+    "required_when": "disc_gradable == TRUE",
+    "optional_when": "disc_gradable == FALSE; a missing file is valid and expected",
+    "geometry_columns": ["disc_x", "disc_y", "disc_radius"]
+  },
+  "av_labels": {
+    "location": "av_labels/",
+    "scope": "only for the images listed for artery/vein labelling",
+    "granularity": "whole major vessel branch, not per pixel",
+    "labels": {"A": "artery", "V": "vein", "U": "uncertain"},
+    "required_when": "av_annotation_completed == TRUE"
+  },
+  "grading_sheet": {
+    "location": "grading_sheet.csv",
+    "rows": "one per packaged study_id",
+    "columns_in_order": [
+      "study_id", "grader_id", "annotation_date", "image_quality",
+      "quality_reason_blur", "quality_reason_low_contrast",
+      "quality_reason_poor_illumination", "quality_reason_artifact",
+      "quality_reason_incomplete_field", "quality_reason_other",
+      "vessels_gradable", "disc_gradable", "disc_x", "disc_y", "disc_radius",
+      "rop_vascular_grade", "grade_confidence",
+      "arterial_tortuosity_score", "venous_dilation_score",
+      "av_annotation_completed", "notes"
+    ],
+    "allowed_values": {
+      "image_quality": ["gradable", "borderline", "ungradable"],
+      "quality_reason_*": ["TRUE", "FALSE", ""],
+      "vessels_gradable": ["TRUE", "FALSE"],
+      "disc_gradable": ["TRUE", "FALSE"],
+      "disc_x": "number, blank when disc_gradable is FALSE",
+      "disc_y": "number, blank when disc_gradable is FALSE",
+      "disc_radius": "number, blank when disc_gradable is FALSE",
+      "rop_vascular_grade": ["Normal", "Pre-Plus", "Plus", "Cannot determine"],
+      "grade_confidence": "integer 1-5",
+      "arterial_tortuosity_score": "integer 0-4",
+      "venous_dilation_score": "integer 0-4",
+      "av_annotation_completed": ["TRUE", "FALSE"],
+      "annotation_date": "ISO 8601 date",
+      "notes": "free text"
+    },
+    "prefilled": ["study_id"],
+    "must_not_contain": ["source", "label", "split", "group_id", "image_path", "mask_path",
+                         "patient_id", "exam_id", "min_side", "peak_prob", "cohort"]
+  },
+  "forbidden_in_package": [
+    "blinding_key.csv",
+    "manifest_blinded.csv",
+    "sampling_summary.csv",
+    "MANIFEST_SHA256.txt",
+    "any original image path or filename",
+    "any automatic vessel mask",
+    "any automatic optic-disc output",
+    "any model prediction, probability or Grad-CAM",
+    "any source, label, split, group or geometry identifier",
+    "any internal result, threshold or acceptance target"
+  ],
+  "validator": "scripts/validate_expert_pilot_package.py",
+  "pass_token": "PILOT_PACKAGE_VALIDATION_PASS"
+}

@@ -1,4 +1,4 @@
-# Data + artifacts (large / regenerated)
+﻿# Data + artifacts (large / regenerated)
 data/raw/
 data/masks/
 data/features/
@@ -57,3 +57,13 @@ credentials.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Expert-validation build outputs and patient data (never commit)
+expert_validation/package_build/
+expert_validation/images/
+expert_validation/*.zip
+expert_validation/*.zip.sha256
+expert_validation/grader_*/
+expert_validation/adjudicated/
+expert_validation/*.pdf
+
