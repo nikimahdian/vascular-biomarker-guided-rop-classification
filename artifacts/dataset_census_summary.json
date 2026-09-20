@@ -1,0 +1,23 @@
+{
+  "CANONICAL_POPULATION_N": 8870,
+  "CANONICAL_UNIQUE_IMAGE_N": 8870,
+  "HISTORICAL_LOSO_POPULATION_N": 8947,
+  "HISTORICAL_LOSO_UNIQUE_IMAGE_N": 8947,
+  "LOSO_ONLY_UNIQUE_IMAGES": 77,
+  "CANONICAL_ONLY_UNIQUE_IMAGES": 0,
+  "PLUS_DIFFERENCE": 73,
+  "FARFUM_DIFFERENCE": 4,
+  "FARABI_DIFFERENCE": 0,
+  "HISTORICAL_LOSO_STATUS": "NONCANONICAL_AND_REQUIRES_RERUN",
+  "FARABI_FOLD_EXTRA_TRAIN_IMAGES": 77,
+  "FARFUM_FOLD_EXTRA_TRAIN_IMAGES": 73,
+  "PLUS_FOLD_EXTRA_TRAIN_IMAGES": 4,
+  "RERUN_REQUIRED": "YES",
+  "classification_counts": {
+    "exact_duplicate_excluded_from_canonical": 54,
+    "UNKNOWN": 23
+  },
+  "canonical_subset_of_loso": true,
+  "divergence_point_summary": "legacy 8960-row manifest of 2026-08-26 minus 13 farabi rows versus the 8870-row canonical split of 2026-08-27",
+  "note": "no patient identifier, path or per-image row is recorded here"
+}
