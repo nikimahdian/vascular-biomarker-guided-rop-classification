@@ -1,5 +1,30 @@
 # Historical-equivalent PVBM reconstruction — Task 4
 
+> ## ⚠ SUPERSEDED LABEL — see `docs/HISTORICAL_SEGMENTATION_RECOVERY.md`
+>
+> **Task 4B established that the segmentation generation producing the historical feature table
+> is not recoverable** (`HISTORICAL_SEGMENTATION_STATE_IRRECOVERABLE`): all ten candidate
+> checkpoints named in `configs/config.yaml` were downloaded and scored, and none reproduces the
+> historical vessel pixel counts at any threshold, on any row.
+>
+> The table built by this task is therefore reclassified:
+>
+> ```
+> PREVIOUS : historical-equivalent corrected feature table
+> NEW      : CURRENT_MASK_HISTORICAL_DEFINITION_BASELINE
+> ```
+>
+> Its feature definitions are historical and unchanged, but its **segmentation measurement
+> generation is the current one**. It must not be called *historical-equivalent*, and it must
+> not be used as if it were the historical experiment with corrected data.
+>
+> The reconstruction itself is preserved unchanged: `TASK4_STATUS = INCOMPLETE`,
+> `HISTORICAL_FEATURE_REPRODUCIBILITY = FAIL`, table sha256
+> `90ce160727347f1d73f571ba4969638550ae534cb13cf891bf814fce92f7a463`.
+> The delta figures in sections G, H and I of this document remain valid as a description of the
+> difference between two tables, but **they are not an attribution to the mask-pairing bug**,
+> which Task 4B records as not isolatable.
+
 ```
 CANONICAL_ROW_N:                        8870
 CANONICAL_UNIQUE_IMAGE_N:               8870

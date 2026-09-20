@@ -1,0 +1,10 @@
+{
+  "table": "biomarker_features_historical_equivalent_corrected_v1.csv",
+  "sha256": "90ce160727347f1d73f571ba4969638550ae534cb13cf891bf814fce92f7a463",
+  "classification": "CURRENT_MASK_HISTORICAL_DEFINITION_BASELINE",
+  "NOT": "HISTORICAL_EQUIVALENT_CORRECTED",
+  "reclassified_by": "Task 4B",
+  "reclassification_reason": "Its PVBM feature definitions are historical and unchanged, but its segmentation measurement generation is the CURRENT one (checkpoint c373f538..., threshold 0.20, masks of 2026-08-30), not the generation that produced the historical feature table. It therefore cannot be called 'historical-equivalent'.",
+  "reclassified_at": "2026-09-20T22:11:39+0330",
+  "historical_segmentation_state": "IRRECOVERABLE"
+}
