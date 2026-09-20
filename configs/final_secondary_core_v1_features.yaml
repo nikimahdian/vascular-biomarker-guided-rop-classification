@@ -1,0 +1,23 @@
+feature_set: FINAL_SECONDARY_CORE_V1
+status: FROZEN before any disease-model performance was seen
+measurement_version: CLINICAL_MEASUREMENT_V1
+segmentation_generation: SEG_CURRENT_V1
+purpose: predeclared sensitivity-analysis set. It adds technically valid, disc-independent features whose
+  external agreement is VARIANCE_LIMITED. It must NOT be used to replace the primary result after inspecting
+  test performance.
+n_features: 3
+features:
+- tort_geodesic_median
+- tort_geodesic_p90
+- tort_geodesic_top3_mean
+reason_not_primary: tortuosity has near-zero bias and the smallest absolute error in the whole panel,
+  but its error variance equals or exceeds the between-image expert variance, so MAE/expert SD is 0.46-1.23.
+  The feature is not wrong; it is noisy relative to its own spread, which makes it unsuitable as a primary
+  predictor.
+external_evidence:
+  tort_geodesic_median: RetCam ICC 0.258 bias +0.0012 MAE 0.0063 MAE/SD 0.594 err/between var 1.020; Neo
+    ICC 0.218 bias +0.0051 MAE 0.0059 MAE/SD 1.232 err/between 1.743
+  tort_geodesic_p90: RetCam ICC 0.309 bias -0.0060 MAE 0.0271 MAE/SD 0.633 err/between 0.820; Neo ICC
+    0.248 bias +0.0131 MAE 0.0263 MAE/SD 0.796 err/between 1.190
+  tort_geodesic_top3_mean: RetCam ICC 0.207 bias -0.1157 MAE 0.1617 MAE/SD 0.458 err/between 0.817; Neo
+    ICC 0.248 bias -0.0201 MAE 0.0680 MAE/SD 0.716 err/between 0.959

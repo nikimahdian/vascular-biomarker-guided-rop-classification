@@ -1,0 +1,30 @@
+feature_set: FINAL_PRIMARY_CORE_V1
+status: FROZEN before any disease-model performance was seen
+measurement_version: CLINICAL_MEASUREMENT_V1
+segmentation_generation: SEG_CURRENT_V1
+purpose: the feature set for the main Branch A and Branch C biomarker experiment
+n_features: 5
+features:
+- vessel_density_fov
+- skel_density_fov
+- fractal_d0
+- fractal_d1
+- fractal_d2
+selection_rule: disc-independent, no QC, no metadata, no exploratory and no forbidden feature. Every member
+  has small or negligible systematic bias in BOTH cameras and ICC(2,1) >= 0.56 in the weaker camera. Selection
+  used measurement evidence only; no label, AUC or feature importance was consulted.
+external_evidence:
+  vessel_density_fov: RetCam ICC 0.872 [0.789,0.995] bias +0.0158 MAE 0.0192 rho 0.942; Neo ICC 0.774
+    bias +0.0001 MAE 0.0129 rho 0.751
+  skel_density_fov: RetCam ICC 0.933 [0.886,0.998] bias -0.0016 MAE 0.0016 rho 0.951; Neo ICC 0.547 bias
+    -0.0050 MAE 0.0051 rho 0.816
+  fractal_d0: RetCam ICC 0.940 [0.897,0.999] bias -0.0183 MAE 0.0202 rho 0.932; Neo ICC 0.569 bias -0.0779
+    MAE 0.0786 rho 0.820
+  fractal_d1: RetCam ICC 0.923 [0.870,0.998] bias -0.0246 MAE 0.0260 rho 0.927; Neo ICC 0.578 bias -0.0817
+    MAE 0.0821 rho 0.830
+  fractal_d2: RetCam ICC 0.911 [0.851,0.997] bias -0.0273 MAE 0.0291 rho 0.924; Neo ICC 0.566 bias -0.0817
+    MAE 0.0825 rho 0.815
+known_limitations:
+- the fractal family is markedly weaker on Neo (ICC 0.57 vs 0.91-0.94) with a -0.08 bias
+- all members inherit the 256x256 segmentation bottleneck and the geometry-dependent shape bias
+- 'no clinical validation: HVDROPDB is development/benchmark data'

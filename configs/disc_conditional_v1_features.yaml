@@ -1,0 +1,31 @@
+feature_set: DISC_CONDITIONAL_V1
+status: FROZEN before any disease-model performance was seen
+measurement_version: CLINICAL_MEASUREMENT_V1
+segmentation_generation: SEG_CURRENT_V1
+purpose: the eight disc-dependent measurements, used only in a separately labelled conditional analysis.
+n_features: 8
+features:
+- width_p50_dd
+- width_p90_dd
+- width_mean_dd
+- width_ann_p50_dd
+- width_ann_p90_dd
+- width_ann_mean_dd
+- vessel_density_fov_ring_2_3dd
+- vessel_density_fov_ring_3_6dd
+valid_only_when: disc_valid = 1 (3772 of 8870 project images, 42.5%)
+population_warning: 'do not compare this population directly with full-cohort primary performance without
+  reporting the population difference: disc validity is source-dependent (plus 38.2%, farfum_rop 53.3%,
+  farabi 48.9%).'
+external_evidence_paired_retcam_n25:
+  width_p50_dd: SEG-ONLY vs GOLD ICC 0.341 bias +0.0328 MAE 0.0328
+  width_p90_dd: ICC 0.125 bias +0.1116 MAE 0.1116
+  width_mean_dd: ICC 0.278 bias +0.0455
+  width_ann_p50_dd: ICC 0.321 bias +0.0461
+  width_ann_p90_dd: ICC 0.047 bias +0.1705
+  width_ann_mean_dd: ICC 0.174 bias +0.0699
+  vessel_density_fov_ring_2_3dd: N=21 ICC 0.821 bias +0.0312 MAE 0.0317
+  vessel_density_fov_ring_3_6dd: N=21 ICC 0.773 bias +0.0286
+external_evidence_note: '25 verified paired RetCam images only. Every caliber feature carries a POSITIVE
+  systematic bias of +0.03 to +0.17 DD: the automatic vessel mask over-measures caliber relative to expert.
+  Neo has no paired reference.'
