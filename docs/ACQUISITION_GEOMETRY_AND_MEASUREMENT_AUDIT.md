@@ -113,26 +113,59 @@ this split.
 
 ---
 
-## 4. Complete leave-one-source-out grid
+## 4. Complete leave-one-source-out grid, with cluster-bootstrap intervals
 
-`artifacts/loo_summary_full.csv` — 9 of 9 rows. Six rows are from the earlier run; the three
-`farabi` rows were produced by `src.compare.leave_one_source_out --holdouts farabi --reuse-b`,
-which evaluates the existing farabi Branch B checkpoint rather than retraining it.
+`artifacts/loo_auc_with_ci.csv`. All three hold-outs are now evaluated in one protocol; `farabi`
+plus `farfum_rop` and `plus` produced with `src.compare.leave_one_source_out --reuse-b`, which
+evaluates the existing Branch B checkpoints rather than retraining them. Intervals are 5,000
+replicate cluster bootstraps over `group_id`.
 
-| hold-out source | n | A (biomarkers) | B (image) | C (fusion) | C − B |
-|---|---|---|---|---|---|
-| farabi | 1410 | **0.5140** | 0.7371 | 0.7351 | -0.0019 |
-| farfum_rop | 1533 | 0.6812 | 0.8634 | 0.8721 | +0.0088 |
-| plus | 6004 | 0.7747 | 0.8865 | 0.8429 | -0.0436 |
+| hold-out | groups | A (biomarkers) | B (image) | C (fusion) |
+|---|---|---|---|---|
+| farabi | 160 | **0.5140 [0.4681, 0.5621]** | 0.7371 [0.6777, 0.7916] | 0.7351 [0.6805, 0.7880] |
+| farfum_rop | 68 | 0.6507 [0.5783, 0.7288] | 0.8647 [0.7710, 0.9501] | 0.8531 [0.7551, 0.9440] |
+| plus | 186 | 0.7328 [0.6936, 0.8091] | 0.8876 [0.8587, 0.9163] | 0.8608 [0.8244, 0.8884] |
+
+**The tabular branch is statistically at chance on `farabi`.** Its interval, [0.4681, 0.5621],
+contains 0.5. This is the sharpest statement the project can make about the biomarker branch: on a
+held-out acquisition source it is not distinguishable from a coin flip, and the point estimate is
+the lower of the three.
+
+Paired `C - B` on the same resampled groups (`artifacts/loo_fusion_delta_with_ci.csv`):
+
+| hold-out | C − B | 95 % CI | verdict |
+|---|---|---|---|
+| farabi | −0.0019 | [−0.0285, +0.0259] | not distinguishable |
+| farfum_rop | −0.0116 | [−0.0228, +0.0016] | not distinguishable |
+| plus | **−0.0268** | **[−0.0461, −0.0205]** | **fusion significantly worse** |
+
+**Fusion beats the image branch in none of the three held-out sources**, and on the largest one it
+is significantly worse. On the locked split it also loses (0.9123 vs 0.9280, DeLong p = 0.00806).
+
+### The refit branches are not stable across runs
+
+Branches A and C are refit inside each LOSO run and are stochastic; Branch B is not, because the
+checkpoints are reused.
+
+| hold-out | branch | this run | earlier run | difference |
+|---|---|---|---|---|
+| farfum_rop | A | 0.6507 | 0.6812 | **−0.0305** |
+| farfum_rop | B | 0.8647 | 0.8634 | +0.0013 |
+| farfum_rop | C | 0.8531 | 0.8721 | −0.0191 |
+| plus | A | 0.7328 | 0.7747 | **−0.0419** |
+| plus | B | 0.8876 | 0.8865 | +0.0010 |
+| plus | C | 0.8608 | 0.8429 | +0.0179 |
+
+Branch B reproduces to within 0.002. Branch A moves by up to 0.042, which is **eight times the
+0.005 complementarity margin the project pre-declared**. Whatever else is true about the tabular
+branch, it is not a stable contributor: its run-to-run spread is larger than the effect it was
+supposed to supply.
 
 | branch | locked test | LOSO mean | drop |
 |---|---|---|---|
-| A | 0.7999 | 0.6566 | -0.1433 |
-| B | 0.9280 | 0.8290 | -0.0990 |
-| C | 0.9123 | 0.8167 | -0.0956 |
-
-Fusion beats the image branch in one of three held-out sources, and loses on the locked test
-(0.9123 vs 0.9280, DeLong p = 0.00806).
+| A | 0.7999 | 0.6325 | −0.1674 |
+| B | 0.9280 | 0.8298 | −0.0982 |
+| C | 0.9123 | 0.8163 | −0.0960 |
 
 ---
 

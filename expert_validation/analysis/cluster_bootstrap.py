@@ -59,9 +59,11 @@ def main() -> None:
 
     if args.predictions:
         rows = []
+        # hold-out names contain underscores ("farfum_rop"), so split on the "_branch_" marker
+        # rather than on every underscore.
         for f in sorted(Path(args.predictions).glob("*_branch_*_test_preds.csv")):
-            parts = f.stem.split("_")
-            holdout, branch = parts[0], parts[2].upper()
+            head, _, tail = f.stem.partition("_branch_")
+            holdout, branch = head, tail.split("_")[0].upper()
             d = pd.read_csv(f)
             if "label" not in d.columns or "group_id" not in d.columns:
                 print(f"[skip] {f.name}: needs label and group_id")
@@ -77,7 +79,7 @@ def main() -> None:
                   f"[{r['ci_low']:.4f}, {r['ci_high']:.4f}]  groups={r['n_groups']}")
 
         # paired C - B on the same hold-out
-        for holdout in sorted({p.name.split("_")[0] for p in
+        for holdout in sorted({p.name.partition("_branch_")[0] for p in
                                Path(args.predictions).glob("*_branch_*_test_preds.csv")}):
             def load(br):
                 f = Path(args.predictions) / f"{holdout}_branch_{br}_test_preds.csv"
