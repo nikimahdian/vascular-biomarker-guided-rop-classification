@@ -1,0 +1,92 @@
+# Clinical v2c — identical to clinical_v2 except the width columns are normalised by the
+# MEASURED optic-disc diameter (HVDROPDB-trained U-Net ensemble) instead of the constant
+# min(h,w)//10 that clinical_v2 used. Clean A/B against diag_v3_clinical.
+run_name: diag_v5_clinical_v2c
+seed: 42
+seeds: [42, 43, 44]
+
+paths:
+  splits_all: data/splits/all.csv
+  features_raw: data/features/biomarker_features_clinical_v2c.csv
+  features_normalized: data/features/biomarker_features_clinical_v2c.csv
+  features_phase4: data/features/biomarker_features_clinical_v2c.csv
+  embeddings: results/hybrid_v2/embeddings_current.npz
+  embeddings_meta: results/hybrid_v2/embeddings_current.json
+  mask_manifest: data/masks/mask_manifest.csv
+  output_root: results/biomarker_diagnostics
+
+columns:
+  image_id: image_path
+  label: label
+  source: source
+  split: split
+  group_id: group_id
+  patient_id: patient_id
+  exam_id: exam_id
+  identity_level: identity_level
+  mask_path: mask_path
+
+sources: [plus, farfum_rop, farabi]
+plus_label: 2
+development_splits: [train, val]
+locked_test_split: test
+
+cv:
+  n_folds: 5
+bootstrap:
+  n_boot: 1000
+
+feature_groups:
+  counts: []
+  density:
+    - vessel_density
+    - density_ring_0_2dd
+    - density_ring_2_3dd
+    - density_ring_3_6dd
+  tortuosity:
+    - tort_median
+    - tort_p90
+    - tort_top3_mean
+  branching: []
+  fractal: []
+  normalized_counts: []
+
+feature_sets:
+  clinical_v2c:
+    table: normalized
+    columns: all_numeric
+  raw23:
+    table: normalized
+    columns: all_numeric
+  phase4_17:
+    table: normalized
+    columns: all_numeric
+  phase4_16:
+    table: normalized
+    columns: all_numeric
+  norm23:
+    table: normalized
+    columns: all_numeric
+  norm_no_count:
+    table: normalized
+    columns: all_numeric
+
+mask_audit:
+  n_sample: 90
+  expert_masks_dir: null
+
+decision_thresholds:
+  mask_dice_min: 0.80
+  mask_cldice_min: 0.80
+  biomarker_icc_min: 0.75
+  source_probe_high_auc: 0.70
+  source_probe_severe_auc: 0.80
+  fusion_delta_macro_auc_min: 0.005
+  fusion_delta_auc_ci_lower_min: 0.0
+  max_allowed_source_auc_drop: 0.01
+  max_allowed_brier_increase: 0.005
+
+notes:
+  thresholds_are: provisional_sensitivity_analysis
+  preferred_reference: expert_or_intergrader_agreement
+  feature_table: biomarker_features_clinical_v2c.csv

@@ -122,6 +122,64 @@ This is why a multi-camera deployment should calibrate its decision threshold pe
 
 Outputs land in `results/hvdro_validation/`. All of it is external validation only: no project data, no locked test, no weights are touched.
 
+### Why the biomarker branch does not transfer
+
+The tabular branch is at chance on an unseen acquisition source, and adding it to the image branch helps in only one of three held-out sources. The causes are measured rather than guessed. Full write-up: `docs/ACQUISITION_GEOMETRY_AND_MEASUREMENT_AUDIT.md`.
+
+**Complete leave-one-source-out grid** (`artifacts/loo_summary_full.csv`, 9/9 rows):
+
+| Hold-out source | n | A (biomarkers) | B (image) | C (fusion) | C − B |
+|---|---|---|---|---|---|
+| farabi | 1410 | **0.514** | 0.737 | 0.735 | −0.002 |
+| farfum_rop | 1533 | 0.681 | 0.863 | 0.872 | +0.009 |
+| plus | 6004 | 0.775 | 0.887 | 0.843 | −0.044 |
+
+| Branch | Locked test | LOSO mean | Drop |
+|---|---|---|---|
+| A | 0.7999 | 0.6566 | −0.1433 |
+| B | 0.9280 | 0.8290 | −0.0990 |
+| C | 0.9123 | 0.8167 | −0.0956 |
+
+Fusion beats the image branch in **one of three** held-out sources and loses on the locked test (DeLong p = 0.00806).
+
+**The clinical feature table existed but was never read.** `src/biomarker/extract_clinical_v2.py` builds `biomarker_features_clinical_v2.csv` with vessel width in disc diameters, artery/vein-specific width and posterior-pole ring densities — the features the clinical definition of Plus actually depends on. `src/classify/branch_a_tabular.py` reads `biomarker_features.csv`, which has none of them. That table also had five concrete defects: the disc diameter was a constant (`dd_over_min_side == 0.1000` for all 8870 rows, because `PVBM.DiscSegmenter` raises and a bare `except` falls through to `min(h,w)//10`); width was sampled on every vessel pixel rather than the skeleton; there was no anatomical region; the artery/vein split was per pixel, which reported arteries *wider* than veins (`av_width_ratio_p90` 1.110); and the tortuosity chord came from `np.where` ordering, which is not a path. `scripts/clinical_features_v3.py` rebuilds the layer and corrects the artery/vein direction (1.110 → **0.934**).
+
+**The width signal was largely an image-size proxy.** Re-normalising `width_p90_dd` by a measured disc instead of by `min(h,w)/10`, evaluated on *identical rows* so coverage is held fixed:
+
+| Column | n | AUC (Plus vs rest) | r vs image min-side |
+|---|---|---|---|
+| `width_p90_dd` (constant DD) | 3772 | **0.6545** | −0.680 |
+| `width_p90_dd_true` (measured DD) | 3772 | **0.5874** | −0.533 |
+
+Dropping the width columns entirely moves source separability from 0.9986 to 0.9980, so width is not what carries the source confound — it is multivariate, with no single feature above univariate AUC 0.78.
+
+**The label is confounded with acquisition geometry.** The dataset is five geometries, not one, and the grouped split did not balance them (`artifacts/geometry_label_balance.csv`):
+
+| Min-side | Split | Images | Plus | Groups | Groups with Plus |
+|---|---|---|---|---|---|
+| 480 (640×480) | train | 1998 | **464** | 58 | **1** |
+| 480 | val / test | 308 / 210 | 0 / 0 | 9 / 12 | 0 / 0 |
+| 960 (1280×960) | train / val / test | 959 / 211 / 212 | 409 / 88 / 89 | 104 / 24 / 24 | 44 / 15 / 10 |
+| 1080 (1440×1080) | all splits | 969 | **0** | 46 | 0 |
+| 1200 (1600×1200) | train / val / test | 1098 / 229 / 230 | 191 / 41 / 41 | 56 / 10 / 10 | 12 / 2 / 2 |
+| 1240 (1240×1240) | train | 1593 | **0** | 46 | **0** |
+| 1240 | val / test | 458 / 395 | 78 / 79 | 9 / 6 | 1 / 1 |
+
+Plus prevalence runs from 0 % to 42 % across geometries. All 464 Plus images at 640×480 come from a single group and lie entirely in train; train has no Plus image at 1240×1240 while 79 of the 209 test Plus images sit at that geometry. Row and column totals reconcile exactly with the locked split (6211 / 1328 / 1331), and `scripts/acquisition_geometry_audit.py` recomputes the table from the original feature table, not from any post-hoc work.
+
+This does **not** mean the headline test AUC is inflated: within geometry branch B scores 0.875 / 0.964 / 0.951 against a pooled 0.928, so the pooled figure is not higher than the within-group figures. What it means is that the headline number mixes "detects Plus" with "transfers the Plus concept across acquisition geometries", and the two cannot be separated on this split.
+
+### Optic-disc detector
+
+`scripts/disc_detector_train.py` trains a U-Net (ResNet34) on the 100 HVDROPDB expert disc masks, 5-fold stratified by camera, and `scripts/disc_inference_all_images.py` applies the ensemble to every project image.
+
+| Camera | Dice | Reference | Radius ratio | Centre error |
+|---|---|---|---|---|
+| RetCam (n=50) | **0.9066** | 0.93 | 0.991 | 0.060 DD |
+| Neo (n=50) | **0.9203** | 0.92 | 1.024 | 0.029 DD |
+
+That replaces the image-centre heuristic, whose radius ratio was 2.35 / 2.84 and whose centre sat 7.5 / 7.1 disc radii away. Applied zero-shot to this project's own images the detector fires confidently on only **42.5 %**; the failure is per-image, not per-patient, and overlays confirm the disc is present in some failures, so it is a domain-transfer limit rather than absent anatomy. Measured-disc features are therefore reported as missing rather than imputed for the images without a confident detection.
+
 ---
 
 ## How it works

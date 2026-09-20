@@ -1,0 +1,5 @@
+column,subset,n,auc_plus_vs_rest,pearson_vs_min_side
+width_p90_dd,all_rows,8870,0.6501,-0.6917
+width_p90_dd,disc_found_rows_only,3772,0.6545,-0.6795
+width_p90_dd_true,all_rows,3772,0.5874,-0.5327
+width_p90_dd_true,disc_found_rows_only,3772,0.5874,-0.5327

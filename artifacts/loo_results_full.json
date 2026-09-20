@@ -1,0 +1,110 @@
+{
+  "results": [
+    {
+      "holdout": "farfum_rop",
+      "branch": "A",
+      "auc": 0.6811849839063302,
+      "sensitivity": 0.3602941176470588,
+      "specificity": 0.8691514670896114,
+      "f1": 0.3663551401869159,
+      "n_test": 1533,
+      "best_model": "lightgbm"
+    },
+    {
+      "holdout": "farfum_rop",
+      "branch": "B",
+      "auc": 0.8633816532164015,
+      "sensitivity": 0.7352941176470589,
+      "specificity": 0.8437747819191118,
+      "f1": 0.5979073243647235,
+      "n_test": null,
+      "best_model": null
+    },
+    {
+      "holdout": "farfum_rop",
+      "branch": "C",
+      "auc": 0.8721427905024024,
+      "sensitivity": 0.8382352941176471,
+      "specificity": 0.7153053132434576,
+      "f1": 0.5308498253783469,
+      "n_test": null,
+      "best_model": "xgboost"
+    },
+    {
+      "holdout": "plus",
+      "branch": "A",
+      "auc": 0.7747180833364145,
+      "sensitivity": 0.9491255961844197,
+      "specificity": 0.25488372093023254,
+      "f1": 0.22825463582489008,
+      "n_test": 6004,
+      "best_model": "lightgbm"
+    },
+    {
+      "holdout": "plus",
+      "branch": "B",
+      "auc": 0.8865491921470035,
+      "sensitivity": 0.8060413354531002,
+      "specificity": 0.7916279069767442,
+      "f1": 0.449468085106383,
+      "n_test": null,
+      "best_model": null
+    },
+    {
+      "holdout": "plus",
+      "branch": "C",
+      "auc": 0.8429078271157615,
+      "sensitivity": 0.7297297297297297,
+      "specificity": 0.7828837209302325,
+      "f1": 0.40709534368070954,
+      "n_test": null,
+      "best_model": "xgboost"
+    },
+    {
+      "holdout": "farabi",
+      "branch": "A",
+      "auc": 0.5140213019514375,
+      "sensitivity": 0.22959183673469388,
+      "specificity": 0.8077858880778589,
+      "f1": 0.3064699205448354,
+      "n_test": 1410,
+      "best_model": "mlp"
+    },
+    {
+      "holdout": "farabi",
+      "branch": "B",
+      "auc": 0.7370855884933049,
+      "sensitivity": 0.5697278911564626,
+      "specificity": 0.8004866180048662,
+      "f1": 0.6163753449862005,
+      "n_test": 1410,
+      "best_model": null
+    },
+    {
+      "holdout": "farabi",
+      "branch": "C",
+      "auc": 0.7351469784994289,
+      "sensitivity": 0.7159863945578231,
+      "specificity": 0.6094890510948905,
+      "f1": 0.6330827067669172,
+      "n_test": 1410,
+      "best_model": "xgboost"
+    }
+  ],
+  "protocol": {
+    "holdouts": [
+      "farabi",
+      "farfum_rop",
+      "plus"
+    ],
+    "branches": [
+      "A",
+      "B",
+      "C"
+    ],
+    "complete_cartesian_product": true,
+    "observed_rows": 9,
+    "expected_rows": 9,
+    "note": "6 rows from the legacy run (loo_partial.json) plus 3 farabi rows produced by src.compare.leave_one_source_out --holdouts farabi --reuse-b, which evaluated the existing farabi Branch B checkpoint instead of retraining it."
+  }
+}

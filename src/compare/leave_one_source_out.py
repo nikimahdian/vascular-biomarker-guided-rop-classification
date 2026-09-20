@@ -185,6 +185,7 @@ def run_branch_b(
     holdout: str,
     epochs: int,
     out_dir: Path,
+    reuse_ckpt: bool = False,
 ) -> dict:
     import torch
     from torch.utils.data import DataLoader
@@ -224,21 +225,24 @@ def run_branch_b(
 
     ckpt = out_dir / f"loo_b_{holdout}_{backbone.replace('.', '_')}.pth"
     best_auc = -1.0
-    for epoch in range(1, epochs + 1):
-        model.train()
-        for x, y in train_dl:
-            x, y = x.to(device), y.to(device)
-            optimizer.zero_grad()
-            loss = criterion(model(x), y)
-            loss.backward()
-            optimizer.step()
-        val_scores, val_labels = predict_scores(model, val_dl, device, plus_idx)
-        vm = plus_ovr_metrics(val_labels, val_scores, plus_idx)
-        print(f"[LOO-B {holdout}] epoch {epoch}/{epochs} val_auc={vm['auc']:.3f}")
-        scheduler.step(vm["auc"] if not np.isnan(vm["auc"]) else 0.0)
-        if not np.isnan(vm["auc"]) and vm["auc"] > best_auc:
-            best_auc = vm["auc"]
-            torch.save({"state_dict": model.state_dict(), "backbone": backbone}, ckpt)
+    if reuse_ckpt and ckpt.exists():
+        print(f"[LOO-B {holdout}] REUSING existing checkpoint {ckpt.name} (no retraining)")
+    else:
+        for epoch in range(1, epochs + 1):
+            model.train()
+            for x, y in train_dl:
+                x, y = x.to(device), y.to(device)
+                optimizer.zero_grad()
+                loss = criterion(model(x), y)
+                loss.backward()
+                optimizer.step()
+            val_scores, val_labels = predict_scores(model, val_dl, device, plus_idx)
+            vm = plus_ovr_metrics(val_labels, val_scores, plus_idx)
+            print(f"[LOO-B {holdout}] epoch {epoch}/{epochs} val_auc={vm['auc']:.3f}")
+            scheduler.step(vm["auc"] if not np.isnan(vm["auc"]) else 0.0)
+            if not np.isnan(vm["auc"]) and vm["auc"] > best_auc:
+                best_auc = vm["auc"]
+                torch.save({"state_dict": model.state_dict(), "backbone": backbone}, ckpt)
 
     model.load_state_dict(torch.load(ckpt, map_location=device)["state_dict"])
     val_scores, val_labels, _ = predict_all(model, val_dl, device, plus_idx)
@@ -385,6 +389,8 @@ def main() -> None:
     ap.add_argument("--holdouts", nargs="*", default=None, help="sources to hold out (default: all)")
     ap.add_argument("--epochs", type=int, default=30, help="Branch B epochs per holdout (default 30)")
     ap.add_argument("--skip-b", action="store_true", help="only run Branch A LOSO")
+    ap.add_argument("--reuse-b", action="store_true",
+                    help="if the Branch B checkpoint for a holdout already exists, evaluate it instead of retraining")
     ap.add_argument("--val-frac", type=float, default=0.15)
     args = ap.parse_args()
 
@@ -499,6 +505,7 @@ def main() -> None:
             holdout,
             args.epochs,
             loo_dir,
+            reuse_ckpt=args.reuse_b,
         )
         for split_name in ["val", "test"]:
             _write_predictions(
