@@ -6,6 +6,13 @@ Defects in extract_clinical_v2.py that this file fixes:
      raised and the bare `except` fell through). Now DD comes from the HVDROPDB-trained
      U-Net ensemble. This is the mechanism behind the project's own SEVERE_SOURCE_CONFOUNDING
      verdict -- "width in DD" was really "width in units of image size", i.e. a camera fingerprint.
+     There is NO fallback: if the disc does not pass DISC_VALID (peak probability and a
+     plausible diameter as a fraction of the image), every disc-relative feature is NaN and the
+     image is excluded from disc-relative analysis. Replacing a failed disc detection with the
+     image centre re-introduces exactly the defect this file exists to remove.
+     Features that do not need a disc (vessel density, skeleton density, branch count, width in
+     pixels, tortuosity ratios, and the artery/vein width ratio) are still computed, so the
+     images without a valid disc are not simply dropped from everything.
   2. Width was sampled on EVERY vessel pixel (dist[mask>0]); that distribution is edge-weighted
      (triangular, zero at the vessel border) and biased low. Now width is sampled on the
      vessel SKELETON only.
@@ -40,7 +47,28 @@ from src.utils.common import append_csv_rows, ensure_dirs, load_config  # noqa: 
 
 WORK = 512          # working long side, px
 MIN_BRANCH = 8      # px, minimum branch length to score tortuosity
-BAND = (0.5, 2.0)   # peripapillary annulus, in disc diameters from the disc centre
+BAND = (0.5, 2.0)   # juxta-papillary caliber zone, in disc diameters from the disc CENTRE
+                    # (= from the disc margin out to 1.5 DD). ICROP3 assesses Plus over a wider
+                    # posterior region than this, so the wider ring_2_3dd / ring_3_6dd densities
+                    # are reported alongside and should be used for the Plus-related analysis.
+PEAK_MIN = 0.9      # disc-detector confidence floor. LOCKED at this value for the frozen
+                    # analysis; the expert disc annotation is what should recalibrate it.
+DD_FRAC = (0.03, 0.25)  # plausible disc diameter as a fraction of the image min side
+
+# Features that are only defined relative to a real optic disc. If DISC_VALID is false these are
+# returned as NaN. There is deliberately NO image-centre fallback: a fabricated disc diameter is
+# exactly what turned "width in disc diameters" into a proxy for image size.
+DISC_DEPENDENT = (
+    "dd_px_work", "dd_over_min_side", "disc_cx_frac", "disc_cy_frac", "disc_centre_offset_frac",
+    "density_ring_0_2dd", "coverage_ring_0_2dd",
+    "density_ring_2_3dd", "coverage_ring_2_3dd",
+    "density_ring_3_6dd", "coverage_ring_3_6dd",
+    "density_q_ne", "density_q_nw", "density_q_sw", "density_q_se",
+    "n_quad_above_median", "quad_density_max", "quad_density_min", "quad_density_range",
+    "width_p50_dd", "width_p90_dd", "width_p95_dd", "width_mean_dd",
+    "width_ann_p50_dd", "width_ann_p90_dd", "width_ann_mean_dd", "n_skel_ann_px",
+    "a_width_p90_dd", "v_width_p90_dd",
+)
 META = ["image_path", "mask_path", "label", "split", "source", "group_id",
         "patient_id", "exam_id", "identity_level"]
 
@@ -69,17 +97,26 @@ def hull_chord(coords: np.ndarray) -> float:
 
 
 def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
-    """All features for one image, computed at the working resolution."""
+    """All features for one image, computed at the working resolution.
+
+    If the disc geometry does not pass DISC_VALID, every disc-relative feature is returned as
+    NaN. There is no image-centre fallback.
+    """
     h, w = mask.shape
     out: dict[str, float | str] = {}
     dd = float(disc.get("disc_dd_px", np.nan))
-    if not np.isfinite(dd) or dd <= 2:
-        dd = float(min(h, w) / 10.0)
-        xc, yc = w / 2.0, h / 2.0
-        out["disc_method"] = "center_fallback"
-    else:
+    peak = float(disc.get("peak_prob", np.nan))
+    dd_frac = dd / min(h, w) if np.isfinite(dd) else np.nan
+    disc_valid = bool(np.isfinite(dd) and dd > 2 and np.isfinite(peak)
+                      and peak > PEAK_MIN and DD_FRAC[0] <= dd_frac <= DD_FRAC[1])
+    out["disc_valid"] = int(disc_valid)
+    out["disc_peak_prob"] = peak
+    if disc_valid:
         xc, yc = float(disc["disc_cx"]), float(disc["disc_cy"])
         out["disc_method"] = "unet_ensemble"
+    else:
+        dd = xc = yc = np.nan          # nothing disc-relative is computable
+        out["disc_method"] = "disc_invalid"
     out["dd_px_work"] = dd
     out["dd_over_min_side"] = dd / min(h, w)
     out["disc_cx_frac"] = xc / w
@@ -113,12 +150,17 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
     out["vessel_density"] = float(mask.mean())
 
     if mask.sum() == 0:
-        for k in ("skel_density", "width_p50_dd", "width_p90_dd", "width_p95_dd", "width_mean_dd",
+        for k in ("skel_density", "width_p50_px", "width_p90_px", "width_mean_px",
+                  "width_p50_dd", "width_p90_dd", "width_p95_dd", "width_mean_dd",
                   "width_ann_p50_dd", "width_ann_p90_dd", "width_ann_mean_dd", "n_skel_px",
                   "n_skel_ann_px", "width_shape_p90_over_p50", "tort_median", "tort_p90",
-                  "tort_top3_mean", "n_branches", "a_width_p90_dd", "v_width_p90_dd",
+                  "tort_top3_mean", "n_branches", "a_width_p90_px", "v_width_p90_px",
+                  "a_width_p90_dd", "v_width_p90_dd",
                   "av_width_ratio_p90", "a_frac", "a_tort_median", "v_tort_median"):
             out[k] = np.nan
+        if not disc_valid:
+            for k in DISC_DEPENDENT:
+                out[k] = np.nan
         return out
 
     skel = skeletonize(mask > 0)
@@ -126,14 +168,18 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
     ys, xs = np.nonzero(skel)
     out["n_skel_px"] = float(len(ys))
     out["skel_density"] = float(skel.mean())
-    width = 2.0 * dist[ys, xs] / max(dd, 1e-6)          # full width, in disc diameters
-    out["width_p50_dd"] = float(np.percentile(width, 50))
-    out["width_p90_dd"] = float(np.percentile(width, 90))
-    out["width_p95_dd"] = float(np.percentile(width, 95))
-    out["width_mean_dd"] = float(width.mean())
-    out["width_shape_p90_over_p50"] = (out["width_p90_dd"] / out["width_p50_dd"]
-                                       if out["width_p50_dd"] > 0 else np.nan)
-    sel = ann[ys, xs]
+    width_px = 2.0 * dist[ys, xs]                       # full width in working pixels
+    out["width_p50_px"] = float(np.percentile(width_px, 50))
+    out["width_p90_px"] = float(np.percentile(width_px, 90))
+    out["width_mean_px"] = float(width_px.mean())
+    width = (width_px / max(dd, 1e-6)) if np.isfinite(dd) else np.full(len(width_px), np.nan)
+    out["width_p50_dd"] = float(np.percentile(width, 50)) if np.isfinite(dd) else np.nan
+    out["width_p90_dd"] = float(np.percentile(width, 90)) if np.isfinite(dd) else np.nan
+    out["width_p95_dd"] = float(np.percentile(width, 95)) if np.isfinite(dd) else np.nan
+    out["width_mean_dd"] = float(width.mean()) if np.isfinite(dd) else np.nan
+    out["width_shape_p90_over_p50"] = (out["width_p90_px"] / out["width_p50_px"]
+                                       if out["width_p50_px"] > 0 else np.nan)
+    sel = ann[ys, xs] if np.isfinite(dd) else np.zeros(len(ys), dtype=bool)
     out["n_skel_ann_px"] = float(sel.sum())
     if sel.sum() >= 20:
         wa = width[sel]
@@ -154,7 +200,7 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
     gbg = ndi.median_filter(g, size=31, mode="nearest")
     gc = g - gbg
 
-    torts, b_int, b_len, b_w = [], [], [], []
+    torts, b_int, b_len, b_w, b_wpx = [], [], [], [], []
     for i in range(1, nlab + 1):
         cy, cx = np.nonzero(lab == i)
         npx = len(cy)
@@ -163,7 +209,9 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
         med_g = float(np.median(gc[cy, cx]))
         b_int.append(med_g)
         b_len.append(npx)
-        b_w.append(float(np.median(2.0 * dist[cy, cx] / max(dd, 1e-6))))
+        wpx = float(np.median(2.0 * dist[cy, cx]))
+        b_wpx.append(wpx)
+        b_w.append(wpx / dd if np.isfinite(dd) else np.nan)
         if npx >= MIN_BRANCH:
             chord = hull_chord(np.column_stack([cx, cy]).astype(float))
             if np.isfinite(chord) and chord > 1e-6:
@@ -190,18 +238,28 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict) -> dict:
         thr = vals[order][cut]
         is_a = vals >= thr
         aw = np.asarray(b_w)
+        awpx = np.asarray(b_wpx)
         alen, vlen = wts[is_a].sum(), wts[~is_a].sum()
         out["a_frac"] = float(alen / max(alen + vlen, 1))
+        out["a_width_p90_px"] = float(np.percentile(awpx[is_a], 90)) if is_a.sum() >= 3 else np.nan
+        out["v_width_p90_px"] = float(np.percentile(awpx[~is_a], 90)) if (~is_a).sum() >= 3 else np.nan
         out["a_width_p90_dd"] = float(np.percentile(aw[is_a], 90)) if is_a.sum() >= 3 else np.nan
         out["v_width_p90_dd"] = float(np.percentile(aw[~is_a], 90)) if (~is_a).sum() >= 3 else np.nan
-        if np.isfinite(out["a_width_p90_dd"]) and out["v_width_p90_dd"] > 0:
-            out["av_width_ratio_p90"] = out["a_width_p90_dd"] / out["v_width_p90_dd"]
+        # the A/V width ratio is a ratio of two disc-normalised widths, so the disc cancels and
+        # this feature is defined even when the disc is not.
+        if np.isfinite(out["a_width_p90_px"]) and out["v_width_p90_px"] > 0:
+            out["av_width_ratio_p90"] = out["a_width_p90_px"] / out["v_width_p90_px"]
         else:
             out["av_width_ratio_p90"] = np.nan
     else:
-        out["a_frac"] = out["a_width_p90_dd"] = out["v_width_p90_dd"] = out["av_width_ratio_p90"] = np.nan
+        out["a_frac"] = out["a_width_p90_px"] = out["v_width_p90_px"] = np.nan
+        out["a_width_p90_dd"] = out["v_width_p90_dd"] = out["av_width_ratio_p90"] = np.nan
     out["a_tort_median"] = np.nan   # per-A/V tortuosity needs branch labels kept; deferred
     out["v_tort_median"] = np.nan
+    # enforce the disc rule: nothing disc-relative survives without a validated disc
+    if not disc_valid:
+        for k in DISC_DEPENDENT:
+            out[k] = np.nan
     return out
 
 

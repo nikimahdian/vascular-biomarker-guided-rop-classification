@@ -161,6 +161,33 @@ optic-disc ground truth exists for this project's data, so the detector cannot b
 here; the measured-disc features are therefore reported as missing rather than imputed for the
 images without a confident detection.
 
+### The disc-validity rule, and the fallback that was removed
+
+`scripts/clinical_features_v3.py` defines a single locked rule:
+
+```
+disc_valid = peak_prob > 0.9  AND  0.03 <= disc_dd_px / min(h, w) <= 0.25
+```
+
+When `disc_valid` is false, **every** disc-relative feature (25 columns: the diameter and centre
+fractions, the ring and quadrant densities and coverages, the annulus-restricted widths, and all
+widths expressed in disc diameters) is returned as `NaN`. There is no image-centre fallback.
+An earlier revision of that script fell back to `dd = min(h,w)/10` and the image centre and then
+computed the disc-relative features anyway, which re-introduced precisely the defect the script
+exists to remove; `docs` and code disagreed about it. That path is gone, and
+`scripts/verify_disc_rule.py` asserts the invariant on any generated table.
+
+Features that do not need a disc are still computed for those images, so the 57.5 % without a
+valid disc are not dropped from everything: vessel density, skeleton density, skeleton pixel
+count, branch count, width in **pixels** (`width_p50_px`, `width_p90_px`, `width_mean_px`),
+`width_shape_p90_over_p50`, the tortuosity statistics, `a_frac`, `a_width_p90_px`,
+`v_width_p90_px` and `av_width_ratio_p90`. The artery/vein width ratio is a ratio of two
+identically normalised widths, so the disc cancels and the feature is defined even when the disc
+is not.
+
+The 0.9 confidence floor is a convention, not a validated cut. Recalibrating it is one of the
+explicit goals of the expert disc annotation in `expert_validation/PROTOCOL.md`.
+
 The vessel mask is produced at 256x256 and upsampled, so any width derived from it quantises at
 roughly (1/256) / (DD fraction ~0.095) ≈ 0.041 disc diameters, independently of the working
 resolution. Against a label effect of 0.19 -> 0.21 disc diameters that is about 20 % of the

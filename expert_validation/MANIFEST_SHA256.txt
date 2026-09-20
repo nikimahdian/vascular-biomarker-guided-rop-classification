@@ -1,0 +1,5 @@
+blinding_key.csv content sha256 = 85da530cef1cd09d83eda399d9597bcce6109335a2c909994268783a9ff0031f
+seed = 20260120
+pool = val+test (segmentation and disc models never trained on these)
+rule = at most one image per group_id
+n = 120   pilot = 30   final = 90
