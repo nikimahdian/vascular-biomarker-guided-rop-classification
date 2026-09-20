@@ -1,0 +1,103 @@
+# SEG_GEOMETRY_CANDIDATE_V2 -- predeclared aspect-preserving letterbox candidate.
+#
+# STATUS: NOT_SUPPORTED. This contract was frozen BEFORE the synthetic geometry gate was run
+# and was NOT altered afterwards (section Y5). It is retained as the record of exactly one V2
+# policy. No HVDROPDB masks were generated under it, because the predeclared prerequisite gate
+# failed (section Y4 early stop).
+#
+# SEG_CURRENT_V1 remains the frozen generation and is unchanged. This candidate is NOT promoted.
+
+generation_id: SEG_GEOMETRY_CANDIDATE_V2
+created_at: "2026-09-21T01:30:00+0330"
+status: NOT_SUPPORTED
+superseded_by: null
+promoted: false
+store_frozen: false
+output_store: data/masks/SEG_GEOMETRY_CANDIDATE_V2
+store_layout: per_generation_directory
+
+# --- the ONLY difference from SEG_CURRENT_V1 ------------------------------------------
+difference_from_v1: spatial mapping between native RGB geometry and the 256x256 model input
+geometry_policy: ASPECT_PRESERVING_LETTERBOX
+geometry_algorithm:
+  scale: "s = min(256 / H, 256 / W)"
+  resize_to: "round(H*s) x round(W*s)"
+  resize_interpolation: "PIL.Image.BILINEAR (same family as V1's torchvision Resize)"
+  pad_to: "256x256"
+  pad_value: "0 (black); ToTensor scales uint8 [0,255] to float [0,1], so the border is 0.0 in tensor space"
+  pad_placement: "floor excess on top/left, remaining pixel on bottom/right when odd"
+  inverse: >-
+    post_process at 256x256, then crop the letterbox bands, then cv2.resize to native with
+    INTER_NEAREST. Threshold timing is identical to V1; only the crop is inserted.
+explicitly_not_attempted:
+  - reflection padding
+  - edge padding
+  - alternative letterbox fill values
+  - alternative target sizes
+  - crop variants
+  - patching
+  - tiling
+  - test-time augmentation
+
+# --- every scientific parameter held identical to SEG_CURRENT_V1 ------------------------
+architecture: MAnet
+encoder: resnet34
+checkpoint_path: weights/best_weight_DeepLabV3+_resize_27
+checkpoint_sha256: c373f53813ee60b89651a04a98bc5f1d6bc60a5a50f45c4e10f42475650d5374
+checkpoint_size_bytes: 127358298
+input_size: [256, 256]
+normalization: "none beyond ToTensor scaling to [0,1]"
+activation: "torch.sigmoid, once"
+threshold: 0.20
+binarization_operator: "strict greater-than"
+connected_component_policy: "cv2.connectedComponentsWithStats, connectivity=8"
+minimum_component_area: 50
+morphological_operations: "cv2.MORPH_CLOSE, 3x3, after component removal"
+binary_output_values: [0, 255]
+output_dtype: "uint8 grayscale PNG"
+mask_readback_threshold: ">127 in src/biomarker/extract_pvbm.py::load_binary_mask"
+
+# --- code identity ---------------------------------------------------------------------
+v1_inference_script: src/segmentation/infer_masks.py
+v1_inference_script_sha256: b76f820025353841908111674a9ca3460776f7add496d6c2a27ff4bbf09f1a1b
+v1_inference_script_unchanged: true
+v2_geometry_module: src/segmentation/letterbox.py
+v2_geometry_module_sha256: 2467c32eabe2afacc33fbed0ed91232313ba7b8bc37cff3ecfa41f7487b62324
+config_sha256: 77a6c9230fd8b6f7230e1085d3415f46ece862d3e160ace983a1be83b97f0a60
+v1_contract_unchanged: configs/segmentation_generation_current_v1.yaml
+
+# --- population ------------------------------------------------------------------------
+canonical_population_fingerprint: 0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8
+canonical_population_n: 8870
+
+# --- predeclared gate and its result ---------------------------------------------------
+predeclared_gate:
+  width_median_abs_geometry_bias_max: 0.05
+  width_min_reduction_vs_v1: 0.50
+  tortuosity_median_abs_geometry_bias_max: 0.05
+  tortuosity_min_reduction_vs_v1: 0.50
+  density_max_abs_relative_change: 0.01
+gate_result:
+  V2_SYNTHETIC_GEOMETRY: FAIL
+  width_median_abs_bias_v1: 0.1228
+  width_median_abs_bias_v2: 0.1440
+  width_reduction_vs_v1: -0.173
+  tortuosity_median_abs_bias_v1: 0.0207
+  tortuosity_median_abs_bias_v2: 0.0562
+  tortuosity_reduction_vs_v1: -1.710
+  density_median_abs_change_v1: 0.0061
+  density_median_abs_change_v2: 0.0005
+  density_pass: true
+  evidence_table: artifacts/v1_v2_synthetic_geometry.csv
+  mechanism: >-
+    at a square geometry both paths are the same spatial map and still carry a -10.6% width
+    bias, so the 256x256 round trip dominates and the <=5% absolute criterion is unreachable
+    by any geometry policy at this input size. Isolated against V1, letterboxing does not
+    reduce the bias and worsens tortuosity by +1.8% to +4.1%, because V1 stretched the short
+    axis up to 256 while V2 downsamples it isotropically (640x480: x1.875 vs x2.500).
+  consequence:
+    V2_HVDROPDB_EVALUATION_RUN: NO
+    V2_RETCAM_SEGMENTATION_NONINFERIORITY: NOT_RUN
+    V2_NEO_SEGMENTATION_NONINFERIORITY: NOT_RUN
+    V2_PRIMARY_MEASUREMENT_NONINFERIORITY: NOT_RUN
+    SEG_GEOMETRY_CANDIDATE_V2_STATUS: NOT_SUPPORTED
