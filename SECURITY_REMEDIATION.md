@@ -36,13 +36,39 @@ heat-map overlays rendered on top of identifiable fundus photographs.
   repository.
 - `.gitignore` now blocks these paths so they cannot be re-added by accident.
 - The full object database was re-scanned after the rewrite: no credential, no patient or
-  examination identifier, no clinical-image data and no dataset manifest remains in any object,
-  reachable or unreachable.
+  examination identifier, no clinical-image data and no dataset manifest remains in any object
+  that a clone receives.
 
-Aggregate result tables and aggregate figures remain in the repository. They contain no patient
-data. Source code continues to reference a local absolute path for the author's own machine; that
-reveals a username and nothing clinical, and it is left in place because the scripts are written to
-run there.
+## RESIDUAL EXPOSURE — NOT YET RESOLVED
+
+Rewriting the history removes the old commits from the branch, but it does not remove the old
+objects from the hosting provider. **Every pre-rewrite commit is still retrievable from GitHub by
+its commit hash**, and this was verified after the rewrite:
+
+- the dataset manifest table and the private study key were both successfully fetched from the
+  remote by their old commit hashes, and
+- the fundus-overlay figure was likewise retrievable.
+
+Because those commit hashes were public, the data must be treated as disclosed for the period it
+was online. Two actions remain, and neither can be completed from inside this repository:
+
+1. **Ask GitHub Support to garbage-collect the unreachable objects** and purge cached views of the
+   repository. GitHub documents this as the required follow-up to a history rewrite: the rewritten
+   history takes effect for normal access, but the old objects persist until Support runs a prune.
+   A ready-to-send request is in `docs/GITHUB_SUPPORT_PURGE_REQUEST.md`.
+2. **Treat the affected dataset as disclosed** and follow the study's data-governance route. The
+   exposure is of a research manifest linking images to labels and of a small number of figures
+   containing identifiable fundus photographs; it is not a credential leak.
+
+Until action 1 completes, this remediation is **partial**: the branch and any fresh clone are
+clean, but the old objects are still served on request.
+
+## Confirmed not present
+
+A fresh clone of the remote contains no credential, no patient or examination identifier, no
+clinical image and no dataset manifest. Aggregate result tables and aggregate plots remain, and
+they contain no patient data. Source code references the author's local home directory in script
+paths; that reveals a username and nothing clinical.
 
 ## Statement on the scientific content
 
