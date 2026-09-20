@@ -1,0 +1,4 @@
+split,n_total,n_wrong_mask_historical,percent_wrong
+train,6211,414,6.665593302205764
+val,1328,106,7.981927710843373
+test,1331,90,6.7618332081142
