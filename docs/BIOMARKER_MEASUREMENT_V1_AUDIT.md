@@ -356,11 +356,113 @@ missingness. That is recorded, not hidden, and it is the main input to section O
 
 ## N. Artery / vein heuristic
 
-Stress-tested and **not validated**. The method is a per-**branch** length-weighted median split of
-background-corrected green intensity. By construction it splits the branch population into two
-groups of equal total length, so **`a_frac` is forced to ≈ 0.5 and carries no information by
-construction** — it is mechanically balanced in branch length, not in branch count, branch width or
-vessel pixels.
+### A/V PERTURBATION STRESS TEST — Task 5B-N closure
+
+```
+AV_STRESS_TEST_EXECUTED:              YES (attempted; own control FAILED, flip rates invalid)
+
+AV_SAMPLE_N:                          360
+BASELINE_BRANCH_N:                    27596
+
+BRIGHTNESS_MAX_FLIP_RATE:             NOT_REPORTED  (control failed)
+CONTRAST_MAX_FLIP_RATE:               NOT_REPORTED  (control failed)
+GAMMA_MAX_FLIP_RATE:                  NOT_REPORTED  (control failed)
+WHITE_BALANCE_MAX_FLIP_RATE:          NOT_REPORTED  (control failed)
+ILLUMINATION_GRADIENT_MAX_FLIP_RATE:  NOT_REPORTED  (control failed)
+
+OVERALL_MAX_BRANCH_FLIP_RATE:         NOT_REPORTED  (control failed)
+
+AV_BALANCE_BRANCH_MEDIAN:             NOT_AVAILABLE (the frozen module emits no branch-count fraction)
+AV_BALANCE_LENGTH_MEDIAN:             0.5402        (frozen table, n = 8865)
+AV_BALANCE_PIXEL_MEDIAN:              NOT_AVAILABLE (the frozen module emits no vessel-pixel fraction)
+
+AV_STATUS:                            EXPLORATORY_ONLY
+
+EXPERT_AV_VALIDATION_AVAILABLE:       NO
+
+DOCUMENTATION_OVERCLAIM_CORRECTED:    YES
+
+TASK5B_N_CLOSURE:                     INCOMPLETE
+```
+
+> **CORRECTION (Task 5B-N closure).** This section previously opened with the words
+> *"Stress-tested and not validated"*. That was **unsupported**: the perturbation stress tests
+> requested in Task 5B section N were never executed. The wording is corrected here before any
+> new experiment is run, and the section is replaced by the measured result once the closure task
+> completes. The unsupported claim is recorded rather than silently removed.
+
+**A/V heuristic remains unvalidated; perturbation stress testing ATTEMPTED AND INVALID.**
+
+A concrete attempt was made to run the requested perturbation battery (360-image stratified
+sample, 26 perturbations, 27,596 baseline branches). **The attempt failed its own control and its
+numbers must not be used.**
+
+The harness replicates the A/V assignment from `src/biomarker/clinical_measurement_v1.py::measure`
+because the frozen module does not expose per-branch labels. A control compared the replicated
+artery fraction against `measure()`'s own `a_frac` on the same image:
+
+```
+CONTROL max |replicated a_frac - measure() a_frac| = 0.4998
+```
+
+The replication returns `a_frac = 1.0` on all 360 images while the frozen implementation returns
+approximately 0.5, so the replica is **not faithful** and every derived quantity, including the
+branch flip rates, is meaningless. **The closure gate was NOT passed.**
+
+Raw attempt, explicitly **not** usable as evidence:
+
+| field | value |
+|---|---|
+| `AV_SAMPLE_N` | 360 (plus 152, farabi 118, farfum_rop 90) |
+| geometries | 1600×1200 118, 1280×960 90, 640×480 90, 1240×1240 62; **1440×1080 absent** (data-limited strata) |
+| `BASELINE_BRANCH_N` | 27,596 |
+| `CONTROL_MAX_ABS_DIFF_A_FRAC` | **0.4998 → FAIL** |
+| reported flip rates | suppressed, invalid |
+
+The one code-level observation that does **not** depend on the broken replica: `measure()` computes
+
+```
+is_a = vals >= thr        # thr = vals[order][cut], the length-weighted median
+```
+
+and because `gc = green - median_filter(green, 31)` leaves a large mass of near-identical values
+on short branches, this comparison is tie-dominated, so the split is decided by tie ordering
+rather than by intensity. **Whether that also degrades the frozen implementation is not
+established** and needs a correct harness.
+
+The method is a per-**branch** length-weighted median split of corrected green intensity. By
+construction it splits the branch population into two groups of equal total length, so
+**`a_frac` is forced to ≈ 0.5 by construction** — it is mechanically balanced in branch length,
+not in branch count, branch width or vessel pixels. That statement is a property of the code and
+needs no experiment.
+
+**Valid section-H evidence, computed from the frozen table and independent of the broken
+replica** (`data/features/clinical_measurement_v1.csv`, `a_frac`, n = 8865):
+
+| statistic | value |
+|---|---|
+| median | **0.5402** |
+| IQR | 0.0646 |
+| p05 – p95 | **0.5025 – 0.6797** |
+| minimum | **0.5001** |
+| images in 0.45 – 0.55 | 0.5768 |
+| images in 0.40 – 0.60 | 0.8205 |
+
+**The minimum never falls below 0.5001.** The artery fraction is bounded below by one half by
+construction, and 57.7 % of images sit inside 0.45–0.55. That is the mechanical 50/50 signature,
+measured on the frozen implementation itself. Independently, `a_width_p90_px` has median 8.4827
+against `v_width_p90_px` median 8.4853, giving a median `av_width_ratio_p90` of **exactly
+1.0000** — a second, independent sign that the two groups are constructed to be balanced rather
+than discovered.
+
+Since the frozen module emits no branch-count or vessel-pixel artery fraction, the corresponding
+balance statistics cannot be computed without changing the module, which this task forbids.
+`AV_BALANCE_BRANCH_MEDIAN` and `AV_BALANCE_PIXEL_MEDIAN` are therefore `NOT_AVAILABLE`, not zero.
+
+**A/V remains `EXPLORATORY_ONLY`.** No expert A/V reference labels exist, no acceptance threshold
+was invented, and nothing here validates biological correctness of the labels.
+
+Original section text retained below for provenance.
 
 | feature | admission |
 |---|---|
