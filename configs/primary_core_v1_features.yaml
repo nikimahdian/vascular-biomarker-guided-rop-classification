@@ -1,0 +1,33 @@
+feature_set: PRIMARY_CORE_V1
+measurement_version: CLINICAL_MEASUREMENT_V1
+segmentation_generation: SEG_CURRENT_V1
+purpose: features eligible for the main corrected Branch A / C experiment
+selection_rule: every feature here is computable without a successful optic-disc detection.
+  No detector-status variable, no missingness indicator, no QC variable, no source/geometry
+  metadata, no A/V heuristic and no raw scale-dependent feature is included. Selection
+  used missingness and measurement properties only, never a label.
+disc_dependent_features_excluded:
+- width_p50_dd
+- width_p90_dd
+- width_mean_dd
+- width_ann_p50_dd
+- width_ann_p90_dd
+- width_ann_mean_dd
+- vessel_density_fov_ring_2_3dd
+- vessel_density_fov_ring_3_6dd
+features:
+- tort_geodesic_median
+- tort_geodesic_p90
+- vessel_density_fov
+- skel_density_fov
+- tort_geodesic_top3_mean
+- n_branches
+- width_shape_p90_over_p50
+- fractal_d0
+- fractal_d1
+- fractal_d2
+expected_missingness_source: FOV detection failure only (45 of 8870 images) plus rare
+  degenerate masks
+imputation_policy: NOT imputed. Missingness is expected to be near-zero and non-informative;
+  if it is not, the gate in Task 5C section D fails and this set must not be trained
+  on.

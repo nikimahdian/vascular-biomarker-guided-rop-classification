@@ -1,0 +1,26 @@
+feature_set: DISC_AUGMENTED_V1
+measurement_version: CLINICAL_MEASUREMENT_V1
+segmentation_generation: SEG_CURRENT_V1
+purpose: valid disc-normalised secondary measurements. This is NOT a primary pooled
+  classifier matrix.
+reserved_for:
+- disc-valid conditional analysis
+- sensitivity analysis
+- later target-domain expert-supported analysis
+valid_only_when: disc_valid = 1 (3772 of 8870 images)
+known_constraint: disc validity is source-dependent (plus 38.2%, farfum_rop 53.3%,
+  farabi 48.9%). Task 5B reported a missingness->label AUC of 0.6445; that figure
+  was in fact a geometry->label AUC and is corrected in Task 5C. The real constraint
+  on this set is not a missingness shortcut but the loss of 57.5% of the cohort and
+  the source bias of which images survive. Any use of this set must be reported as
+  conditional on disc validity.
+features:
+- width_p50_dd
+- width_p90_dd
+- width_mean_dd
+- width_ann_p50_dd
+- width_ann_p90_dd
+- width_ann_mean_dd
+- vessel_density_fov_ring_2_3dd
+- vessel_density_fov_ring_3_6dd
+imputation_policy: NOT imputed. Rows without a valid disc are excluded, not filled.

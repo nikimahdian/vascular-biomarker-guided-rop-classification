@@ -66,11 +66,25 @@ secondary_allowed_approved:
     unit: disc diameters
     reason: as width_p50_dd.
     depends_on_disc: true
+  - name: width_ann_p50_dd
+    unit: disc diameters
+    reason: >-
+      median caliber inside the juxta-papillary annulus, the zone most comparable across
+      cameras. NaN unless roi_coverage_annulus >= 0.60 and at least 20 annulus skeleton pixels.
+    depends_on_disc: true
+    requires_roi_coverage: roi_coverage_annulus
   - name: width_ann_p90_dd
     unit: disc diameters
     reason: >-
       caliber inside the juxta-papillary annulus, the zone most comparable across cameras.
       NaN unless roi_coverage_annulus >= 0.60.
+    depends_on_disc: true
+    requires_roi_coverage: roi_coverage_annulus
+  - name: width_ann_mean_dd
+    unit: disc diameters
+    reason: >-
+      mean caliber inside the juxta-papillary annulus. NaN unless roi_coverage_annulus >= 0.60
+      and at least 20 annulus skeleton pixels.
     depends_on_disc: true
     requires_roi_coverage: roi_coverage_annulus
   - name: width_shape_p90_over_p50

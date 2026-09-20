@@ -376,6 +376,16 @@ substitute for that. **Physiological plausibility is not accepted as validation.
 
 ## O. Missingness shortcut audit
 
+> **CORRECTION (Task 5C).** The AUCs reported in this section were computed with acquisition
+> geometry — `dd_over_min_side` and `fov_coverage_fraction` — as the **predictor**, not with the
+> missingness indicator. They are therefore `geometry → target` AUCs and are mislabelled here as
+> a missingness shortcut. Task 5C recomputed the statistic correctly: with the missingness
+> indicator as the predictor, `PRIMARY_CORE_V1` missingness shows **no material association** with
+> source (χ²=0.24, p=0.886), geometry (χ²=5.68, p=0.224) or label (χ²=0.12, p=0.942), on 8
+> missing rows of 8870. The `MISSINGNESS_SHORTCUT_STATUS = FAIL` headline in the header block of
+> this document is **withdrawn**; the geometry → label AUC of 0.6445 remains a real and separate
+> acquisition-shortcut finding, reported in section P.
+
 `is_missing(feature)` was derived for every feature and used as the target of a 5-fold logistic
 regression on `(dd_over_min_side, fov_coverage_fraction)`. Macro one-vs-rest AUC:
 
