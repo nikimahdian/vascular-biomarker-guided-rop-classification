@@ -1,0 +1,186 @@
+# CLINICAL_MEASUREMENT_V1 -- frozen allowed classifier matrix.
+#
+# Only PRIMARY_ALLOWED features and explicitly approved SECONDARY_ALLOWED features appear here.
+# Everything else measured by CLINICAL_MEASUREMENT_V1 is deliberately excluded.
+#
+# Excluded by construction: metadata, identifiers, source, split, geometry, raw image
+# dimensions, detector confidence, detector-validity flags, QC variables, ROI coverage gates,
+# exploratory A/V variables and forbidden scale-dependent features.
+#
+# No predictive performance was used to build this list. It is a measurement-admissibility
+# list, not a feature-selection result.
+
+measurement_version: CLINICAL_MEASUREMENT_V1
+created_at: "2026-09-20T23:30:00+0330"
+source_table: data/features/clinical_measurement_v1.csv
+segmentation_generation: SEG_CURRENT_V1
+
+primary_allowed:
+  - name: tort_geodesic_median
+    unit: dimensionless
+    reason: >-
+      median branch tortuosity under the frozen smoothed-geodesic definition. Scale, padding and
+      rotation invariant to within 0.004 orientation dispersion on synthetic straight vessels.
+    depends_on_disc: false
+    depends_on_fov: false
+  - name: tort_geodesic_p90
+    unit: dimensionless
+    reason: upper tail of the same measurement; same invariances.
+    depends_on_disc: false
+    depends_on_fov: false
+  - name: vessel_density_fov
+    unit: fraction of the retinal field of view
+    reason: >-
+      the only density definition whose padding invariance is exact (relative change
+      0.00000000 under +50/+100/+200/+300 px and rectangular padding).
+    depends_on_disc: false
+    depends_on_fov: true
+  - name: skel_density_fov
+    unit: skeleton pixels per FOV pixel
+    reason: as vessel_density_fov, on the skeleton rather than the mask.
+    depends_on_disc: false
+    depends_on_fov: true
+
+secondary_allowed_approved:
+  - name: tort_geodesic_top3_mean
+    unit: dimensionless
+    reason: mean of the three most tortuous branches; same definition, more tail-weighted.
+  - name: n_branches
+    unit: count
+    reason: >-
+      branch count after junction removal. Stable under rescaling (4 at 1x, 2x and 4x on a
+      synthetic tree) but not rotation invariant, because raster topology can merge or split a
+      junction. Accepted as secondary only.
+  - name: width_p50_dd
+    unit: disc diameters
+    reason: >-
+      median disc-normalised caliber. Accepted as secondary, not primary, because the digital
+      width estimator carries a 0.5 px parity quantisation and up to 1.86 px orientation
+      dispersion, giving about 2.5% spread in width/DD across a 4x scale range.
+    depends_on_disc: true
+  - name: width_p90_dd
+    unit: disc diameters
+    reason: as width_p50_dd, upper tail.
+    depends_on_disc: true
+  - name: width_mean_dd
+    unit: disc diameters
+    reason: as width_p50_dd.
+    depends_on_disc: true
+  - name: width_ann_p90_dd
+    unit: disc diameters
+    reason: >-
+      caliber inside the juxta-papillary annulus, the zone most comparable across cameras.
+      NaN unless roi_coverage_annulus >= 0.60.
+    depends_on_disc: true
+    requires_roi_coverage: roi_coverage_annulus
+  - name: width_shape_p90_over_p50
+    unit: ratio
+    reason: >-
+      dimensionless caliber heterogeneity. A ratio, so the disc cancels and it survives an
+      invalid disc; accepted as secondary because the ratio of two quantised percentiles
+      inherits the quantisation at small caliber.
+  - name: vessel_density_fov_ring_2_3dd
+    unit: fraction
+    reason: >-
+      peripapillary density in [2,3) DD, FOV-normalised. NaN unless its ROI coverage >= 0.60.
+    depends_on_disc: true
+    depends_on_fov: true
+    requires_roi_coverage: roi_coverage_ring_2_3dd
+  - name: vessel_density_fov_ring_3_6dd
+    unit: fraction
+    reason: >-
+      posterior-pole density in [3,6) DD, FOV-normalised. NaN unless its ROI coverage >= 0.60.
+    depends_on_disc: true
+    depends_on_fov: true
+    requires_roi_coverage: roi_coverage_ring_3_6dd
+  - name: fractal_d0
+    unit: dimensionless
+    reason: >-
+      capacity dimension of the FOV-masked vessel mask at the fixed working resolution.
+      Accepted as secondary: relative spread 0.118 across resolution, padding, crop and
+      morphology perturbations, so it is not a hard invariant.
+  - name: fractal_d1
+    unit: dimensionless
+    reason: as fractal_d0, relative spread 0.082.
+  - name: fractal_d2
+    unit: dimensionless
+    reason: as fractal_d0, relative spread 0.079.
+
+# ---------------------------------------------------------------- explicit exclusions
+excluded:
+  metadata_and_ids:
+    - image_path
+    - mask_path
+    - label
+    - split
+    - source
+    - group_id
+    - patient_id
+    - exam_id
+    - identity_level
+    - measurement_version
+    - work_resolution
+  detector_and_qc:
+    - disc_valid
+    - disc_peak_prob
+    - disc_method
+    - fov_valid
+    - fov_coverage_fraction
+    - fov_n_components
+    - fov_border_contact
+    - fov_centroid_offset
+    - fov_failure_reason
+    - roi_coverage_ring_0_2dd
+    - roi_coverage_ring_2_3dd
+    - roi_coverage_ring_3_6dd
+    - roi_coverage_annulus
+    - roi_coverage_pole
+    - dd_px_work
+    - dd_over_min_side
+    - disc_cx_frac
+    - disc_cy_frac
+    - disc_centre_offset_frac
+    - width_quantisation_floor_dd
+    - n_skel_px_disc
+  acquisition_shortcuts:
+    - vessel_density_wholeframe
+    - vessel_area_fraction_work
+    - vessel_pixels_work
+    - skeleton_px_work
+    - branch_px_work
+    - width_p50_px
+    - width_p90_px
+    - width_mean_px
+    - width_p95_dd
+  boundary_topology:
+    - n_startpoints
+    - n_endpoints
+    - n_intersections
+    - n_startpoints_fov
+    - n_endpoints_fov
+    - n_intersections_fov
+  unvalidated_av:
+    - a_frac
+    - a_width_p90_px
+    - v_width_p90_px
+    - av_width_ratio_p90
+  frame_geometry_not_anatomy:
+    - frame_sector_ne_density
+    - frame_sector_nw_density
+    - frame_sector_sw_density
+    - frame_sector_se_density
+    - sector_density_range
+    - n_sectors_above_median
+  unstable:
+    - singularity_length
+    - tort_pixelcount_median_provenance
+
+# ---------------------------------------------------------------- matrix policy
+policy:
+  imputation: "training-split medians only; the matrix must be fitted per fold"
+  missingness_indicators_in_matrix: false
+  disc_invalid_handling: >-
+    rows with disc_valid = 0 have NaN for every disc-dependent column in this list. They must be
+    either dropped from the disc-dependent analysis or handled by the fold-level imputation, and
+    the choice must be pre-specified before training, never tuned on test.
+  frozen: true

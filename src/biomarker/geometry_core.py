@@ -130,6 +130,74 @@ def branch_tortuosity(mask: np.ndarray, min_px: int = MIN_BRANCH_PX) -> np.ndarr
     return np.asarray(out, dtype=float)
 
 
+def _order_branch(ys: np.ndarray, xs: np.ndarray) -> np.ndarray:
+    """Order one branch's pixels along the path, walking the 8-connected graph."""
+    idx = {(int(y), int(x)): k for k, (y, x) in enumerate(zip(ys, xs))}
+    adj: dict[int, list[int]] = {k: [] for k in idx.values()}
+    for (y, x), k in idx.items():
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dy == 0 and dx == 0:
+                    continue
+                j = idx.get((y + dy, x + dx))
+                if j is not None:
+                    adj[k].append(j)
+    ends = [k for k, v in adj.items() if len(v) == 1]
+    start = ends[0] if ends else 0
+    seen = {start}
+    order = [start]
+    stack = [start]
+    while stack:
+        cur = stack.pop()
+        nxt = [j for j in adj[cur] if j not in seen]
+        if nxt:
+            seen.add(nxt[0])
+            order.append(nxt[0])
+            stack.append(nxt[0])
+    return np.asarray(order, int)
+
+
+def branch_tortuosity_smoothed(mask: np.ndarray, min_px: int = MIN_BRANCH_PX,
+                               window: int = 5) -> np.ndarray:
+    """arc/chord per branch with the raster staircase suppressed by path smoothing.
+
+    The geodesic definition (branch_tortuosity) is exact on the pixel graph, but a rasterised
+    straight line is a staircase whose 8-connected length exceeds its chord by up to 7 % at
+    15/30/60/75 degrees, so straight vessels do not all score 1.0. Ordering the branch pixels
+    along the path and averaging their coordinates with a small moving window removes that
+    staircase; the arc is then the polyline length of the smoothed path and the chord is the
+    distance between its two ends. Curvature is preserved because the window is short.
+    """
+    skel = skeletonize(mask > 0)
+    k8 = np.ones((3, 3), np.uint8)
+    nb = ndi.convolve(skel.astype(np.uint8), k8, mode="constant") * skel
+    branches = skel.copy()
+    branches[nb >= 4] = False
+    lab, n = ndi.label(branches, structure=np.ones((3, 3), int))
+    out: list[float] = []
+    for i in range(1, n + 1):
+        ys, xs = np.nonzero(lab == i)
+        if len(ys) < min_px:
+            continue
+        order = _order_branch(ys, xs)
+        if len(order) < min_px:
+            continue
+        py = ys[order].astype(float)
+        px = xs[order].astype(float)
+        w = max(3, int(window) | 1)
+        if len(py) >= w:
+            k = np.ones(w, float) / w
+            py = np.convolve(np.pad(py, w // 2, mode="edge"), k, mode="valid")
+            px = np.convolve(np.pad(px, w // 2, mode="edge"), k, mode="valid")
+        arc = float(np.sum(np.hypot(np.diff(py), np.diff(px))))
+        chord = float(np.hypot(py[-1] - py[0], px[-1] - px[0]))
+        if np.isfinite(arc) and chord > 1e-6:
+            t = arc / chord
+            if np.isfinite(t) and t < 20:
+                out.append(t)
+    return np.asarray(out, dtype=float)
+
+
 def branch_tortuosity_pixelcount(mask: np.ndarray, min_px: int = MIN_BRANCH_PX) -> np.ndarray:
     """The historical definition, kept only so tests can demonstrate what was wrong."""
     from scipy.spatial import ConvexHull

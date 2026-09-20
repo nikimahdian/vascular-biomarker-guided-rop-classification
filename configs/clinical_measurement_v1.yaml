@@ -1,0 +1,271 @@
+# CLINICAL_MEASUREMENT_V1 -- frozen measurement definitions.
+#
+# Every mathematical definition below is frozen before any model is trained. No definition may
+# change without a new measurement version id.
+#
+# This layer consumes SEG_CURRENT_V1 only. It is NOT historical-equivalent: the historical
+# Aug-27 segmentation generation is unrecoverable (docs/HISTORICAL_SEGMENTATION_RECOVERY.md).
+#
+# Admission statuses:
+#   PRIMARY_ALLOWED                  technically validated, clinically interpretable, acceptable
+#                                    invariance
+#   SECONDARY_ALLOWED                technically valid but more assumption-dependent
+#   EXPLORATORY_ONLY                 reportable, must not support primary claims
+#   FORBIDDEN_FROM_FINAL_CLASSIFIER  acquisition shortcut, metadata proxy, invalid definition,
+#                                    detector-status shortcut, dead feature, unresolved defect
+#
+# No predictive performance was used to assign any status.
+
+measurement_version: CLINICAL_MEASUREMENT_V1
+created_at: "2026-09-20T23:30:00+0330"
+
+segmentation_generation: SEG_CURRENT_V1
+segmentation_contract: configs/segmentation_generation_current_v1.yaml
+segmentation_checkpoint_sha256: c373f53813ee60b89651a04a98bc5f1d6bc60a5a50f45c4e10f42475650d5374
+mask_reference: data/masks/mask_manifest_canonical_v1.csv
+mask_mapping_sha256: b3bc6538026d6ad0fc1342043e5ca2d6de56662233bf6d0709d9d875f24b21cd
+canonical_population_n: 8870
+canonical_population_fingerprint: 0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8
+
+output_table: data/features/clinical_measurement_v1.csv
+implementation: src/biomarker/clinical_measurement_v1.py
+geometry_primitives: src/biomarker/geometry_core.py
+
+# ---------------------------------------------------------------- resolution and scale
+working_resolution:
+  long_side_px: 512
+  reason: >-
+    a fixed working grid removes the acquisition-resolution term from every ratio. All
+    disc-normalised features divide by DD in the same pixels, so the working grid cancels.
+  note: >-
+    the SEG_CURRENT_V1 mask was produced at 256x256 and upsampled to native before being
+    resampled here, so the effective binarisation step is ceil(native_long_side/256) pixels.
+segmentation_aspect_ratio:
+  preserved: false
+  consequence: >-
+    non-square geometries were squeezed to a square before inference and stretched back. The
+    synthetic audit measures -15% on width and +20% on tortuosity for 4:3 frames; a 1240x1240
+    frame is unaffected.
+  risk: FEATURE_DEPENDENT
+
+# ---------------------------------------------------------------- ROI definitions
+roi_definitions:
+  fov:
+    definition: >-
+      retinal field of view from the photograph's green channel: Otsu threshold, largest
+      connected component, holes filled, closed with a radius-3 disk. Independent of the
+      vessel mask, because the FOV is a property of the photograph.
+    units: boolean pixel mask at the working resolution
+  rings:
+    definition: >-
+      concentric annuli about the optic disc centre, in disc diameters:
+      ring_0_2dd = [0,2), ring_2_3dd = [2,3), ring_3_6dd = [3,6)
+    units: disc diameters from the disc centre
+  annulus:
+    definition: "juxta-papillary caliber zone, [0.5, 2.0) disc diameters from the disc centre"
+    units: disc diameters
+  frame_sectors:
+    definition: >-
+      four sectors of the posterior pole (r < 6 DD) split at the image-frame vertical and
+      horizontal axes through the disc centre
+    units: fraction of vessel pixels inside the sector
+    anatomical: false
+    warning: >-
+      these are IMAGE-FRAME sectors, NOT ICROP anatomical quadrants. ICROP quadrants are
+      defined relative to the disc-macula axis; no such axis is detected here. They must never
+      be presented as anatomical or as ICROP zones.
+
+# ---------------------------------------------------------------- disc and FOV rules
+disc_validity:
+  implementation: HVDROPDB-trained U-Net ensemble predictions
+  source_table: results/hvdro_validation/disc/disc_predictions_all.csv
+  rule: >-
+    disc_valid = finite(dd_px) AND dd_px > 2 AND finite(peak_prob) AND peak_prob > 0.90
+    AND 0.03 <= dd_px/min(H,W) <= 0.25
+  fallback: NONE
+  rule_when_invalid: >-
+    every disc-relative feature is NaN. There is deliberately no image-centre or
+    constant-radius fallback: a fabricated disc diameter is what turned "width in disc
+    diameters" into a proxy for image size in the historical pipeline.
+fov_validity:
+  rule: >-
+    fov_valid = 0.15 <= coverage <= 0.985 AND largest_component_fraction >= 0.90
+  rule_when_invalid: >-
+    the FOV failure flag is recordable but FOV-normalised densities are still computed from the
+    detected region; a failed FOV must be excluded by the QC policy, never silently trusted.
+  qc_only: true
+
+# ---------------------------------------------------------------- skeleton and branches
+skeleton_rules:
+  method: skimage.morphology.skeletonize on the binary mask
+  branch_definition: "skeleton pixels with fewer than 4 eight-neighbours (junctions removed)"
+  minimum_branch_px: 8
+
+# ---------------------------------------------------------------- tortuosity (frozen)
+tortuosity:
+  definition: >-
+    per branch: arc = polyline length of the branch pixels after ordering them along the path
+    and smoothing their coordinates with a 5-pixel moving average; chord = Euclidean distance
+    between the two ends of the smoothed path; T = arc/chord.
+  why_smoothed: >-
+    the raw 8-connected geodesic is exact on the pixel graph, but a rasterised straight line is
+    a staircase whose length exceeds its chord by up to 7.3% at 15/30/60/75 degrees, so straight
+    vessels would not all score 1.0. Smoothing removes the staircase while preserving curvature.
+  measured_performance:
+    straight_line_orientation_dispersion_smoothed: 0.0039
+    straight_line_orientation_dispersion_raw_geodesic: 0.0732
+    straight_line_orientation_dispersion_historical_pixelcount: 0.2929
+    max_abs_error_vs_analytic: 0.0077
+  guarantees:
+    minimum: "T >= 1 - 1e-6 for every synthetic case"
+    degenerate: "branches shorter than minimum_branch_px are excluded, never scored"
+  rejected: >-
+    the historical clinical definition (branch pixel count / hull chord): orientation-dependent,
+    scoring a straight vessel 1.003 at 0 degrees and 0.710 at 45 degrees.
+
+# ---------------------------------------------------------------- width (frozen)
+width:
+  raw_estimator: "2 * EDT at every skeleton pixel"
+  estimator_selection: >-
+    three candidate estimators were measured on synthetic strips across 7 orientations and 5
+    widths. 2*EDT had the smallest median absolute relative error (0.0124) against 2*EDT-1
+    (0.0686) and area/skeleton (0.0574), so 2*EDT is frozen.
+  sampling: "skeleton pixels only; sampling every vessel pixel is edge-weighted and biased low"
+  disc_normalisation: "width_px / dd_px, NaN when disc_valid is false"
+  measured_floor:
+    parity_quantisation_px: 0.5
+    orientation_dispersion_px: 1.858
+    median_abs_rel_err: 0.0124
+    width_over_dd_scale_spread_1x_to_4x: 0.025
+  claim_limit: >-
+    sub-pixel width precision is NOT claimed. The pipeline supports width/DD to about 2.5%
+    across a 4x scale range and no better than about 1 pixel across orientations.
+  segmentation_quantisation_floor_dd: >-
+    ceil(native_long_side/256) / dd_px; worst case in this cohort is 0.104 DD at a 1600 px long
+    side with a 60 px disc.
+
+# ---------------------------------------------------------------- density (frozen)
+density:
+  whole_frame:
+    definition: "vessel pixels / all pixels in the working frame"
+    status_reason: >-
+      changes by -83% under +300 px of black border and by -49% under rectangular padding.
+      Retained for provenance only.
+  fov_normalised:
+    definition: "vessel pixels inside the FOV / FOV pixels"
+    measured_padding_invariance: exact (relative change 0.00000000 under +50/+100/+200/+300 px
+      and rectangular padding)
+  disc_relative_rings:
+    definition: "vessel pixels inside ring AND FOV / pixels of ring AND FOV, per ring"
+    guard: "NaN when ROI coverage of that ring is below the minimum"
+  disc_relative_pole:
+    definition: "as rings, restricted to r < 6 DD"
+
+# ---------------------------------------------------------------- ROI coverage policy
+roi_coverage_policy:
+  minimum_coverage: 0.60
+  justification: >-
+    a region with less than 60% of its area inside the detected FOV is more than 40% truncated;
+    the density of a truncated region is a biased estimate of the region's true density and the
+    bias direction depends on where the truncation falls. The threshold is geometric and was
+    not chosen from any label performance.
+  rule: "coverage < 0.60 -> the region's density is NaN, never a silently biased number"
+  reported_per_feature: roi_coverage_ring_0_2dd, roi_coverage_ring_2_3dd, roi_coverage_ring_3_6dd,
+    roi_coverage_annulus, roi_coverage_pole
+
+# ---------------------------------------------------------------- missingness
+missingness_policy:
+  imputation: "none at measurement time. NaN is the only sentinel."
+  indicators: "is_missing(<feature>) is emitted for every feature with any NaN"
+  indicators_status: FORBIDDEN_FROM_FINAL_CLASSIFIER
+  reason: >-
+    missingness is driven by disc detection and FOV detection, which are acquisition- and
+    source-dependent. Using it as a predictor is a detector-status shortcut.
+
+# ---------------------------------------------------------------- A/V
+av_status:
+  status: EXPLORATORY_ONLY
+  method: >-
+    per skeleton BRANCH (not per pixel), background-corrected green median, length-weighted
+    median split into two groups
+  validation: NONE
+  reason: >-
+    the intensity heuristic is unvalidated against expert artery/vein labels and its branch
+    labels flip under brightness, contrast, gamma, white balance and channel scaling. No
+    physiological plausibility argument is accepted as validation.
+
+# ---------------------------------------------------------------- feature admission
+features:
+  # ---- PRIMARY_ALLOWED ----
+  tort_geodesic_median: {admission: PRIMARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  tort_geodesic_p90: {admission: PRIMARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  vessel_density_fov: {admission: PRIMARY_ALLOWED, unit: fraction of FOV, depends_on_disc: false, depends_on_fov: true, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  skel_density_fov: {admission: PRIMARY_ALLOWED, unit: skeleton px per FOV px, depends_on_disc: false, depends_on_fov: true, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  n_branches: {admission: SECONDARY_ALLOWED, unit: count, depends_on_disc: false, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: false}
+  # ---- SECONDARY_ALLOWED ----
+  tort_geodesic_top3_mean: {admission: SECONDARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  width_p50_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, known_floor: 0.025}
+  width_p90_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, known_floor: 0.025}
+  width_mean_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  width_ann_p90_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, requires: roi_coverage_annulus >= 0.60}
+  width_ann_p50_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, requires: roi_coverage_annulus >= 0.60 and at least 20 annulus skeleton pixels}
+  width_ann_mean_dd: {admission: SECONDARY_ALLOWED, unit: disc diameters, depends_on_disc: true, depends_on_fov: false, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, requires: roi_coverage_annulus >= 0.60 and at least 20 annulus skeleton pixels}
+  width_shape_p90_over_p50: {admission: SECONDARY_ALLOWED, unit: ratio, depends_on_disc: false, depends_on_fov: false, depends_on_resolution: true, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true}
+  vessel_density_fov_ring_2_3dd: {admission: SECONDARY_ALLOWED, unit: fraction, depends_on_disc: true, depends_on_fov: true, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, requires: roi_coverage_ring_2_3dd >= 0.60}
+  vessel_density_fov_ring_3_6dd: {admission: SECONDARY_ALLOWED, unit: fraction, depends_on_disc: true, depends_on_fov: true, depends_on_resolution: false, depends_on_av: false, scale_invariant: true, padding_invariant: true, rotation_invariant: true, requires: roi_coverage_ring_3_6dd >= 0.60}
+  fractal_d0: {admission: SECONDARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: true, depends_on_resolution: true, depends_on_av: false, scale_invariant: false, padding_invariant: false, rotation_invariant: true, known_limitation: "relative spread 0.118 across resolution/padding/crop/morphology perturbations"}
+  fractal_d1: {admission: SECONDARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: true, depends_on_resolution: true, depends_on_av: false, scale_invariant: false, padding_invariant: false, rotation_invariant: true, known_limitation: "relative spread 0.082"}
+  fractal_d2: {admission: SECONDARY_ALLOWED, unit: dimensionless, depends_on_disc: false, depends_on_fov: true, depends_on_resolution: true, depends_on_av: false, scale_invariant: false, padding_invariant: false, rotation_invariant: true, known_limitation: "relative spread 0.079"}
+  # ---- EXPLORATORY_ONLY ----
+  vessel_density_wholeframe: {admission: EXPLORATORY_ONLY, unit: fraction of frame, scale_invariant: false, padding_invariant: false, reason: "provenance only; fails padding invariance by -83% at +300 px"}
+  vessel_density_fov_ring_0_2dd: {admission: EXPLORATORY_ONLY, unit: fraction, depends_on_disc: true, reason: "the innermost ring is dominated by the disc and major vessel trunks"}
+  width_p50_px: {admission: EXPLORATORY_ONLY, unit: working pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  width_p90_px: {admission: EXPLORATORY_ONLY, unit: working pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  width_mean_px: {admission: EXPLORATORY_ONLY, unit: working pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  width_p95_dd: {admission: EXPLORATORY_ONLY, unit: disc diameters, depends_on_disc: true, reason: "p95 is tail-dominated and unstable"}
+  vessel_pixels_work: {admission: EXPLORATORY_ONLY, unit: pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  vessel_area_fraction_work: {admission: EXPLORATORY_ONLY, unit: fraction, scale_dependent: RAW_SCALE_DEPENDENT, padding_invariant: false}
+  skeleton_px_work: {admission: EXPLORATORY_ONLY, unit: pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  branch_px_work: {admission: EXPLORATORY_ONLY, unit: pixels, scale_dependent: RAW_SCALE_DEPENDENT}
+  n_startpoints: {admission: EXPLORATORY_ONLY, unit: count, reason: "ROI/boundary topology, not vascular topology"}
+  n_endpoints: {admission: EXPLORATORY_ONLY, unit: count, reason: "ROI/boundary topology"}
+  n_intersections: {admission: EXPLORATORY_ONLY, unit: count, reason: "scale-dependent (7 at 1x, 19 at 2x on a fixed synthetic tree)"}
+  n_startpoints_fov: {admission: EXPLORATORY_ONLY, unit: count, reason: "same quantity measured inside the FOV; no more biological"}
+  n_endpoints_fov: {admission: EXPLORATORY_ONLY, unit: count, reason: "same"}
+  n_intersections_fov: {admission: EXPLORATORY_ONLY, unit: count, reason: "same"}
+  tort_pixelcount_median_provenance: {admission: EXPLORATORY_ONLY, unit: dimensionless, reason: "historical definition, kept only to demonstrate the orientation defect (dispersion 0.293 vs 0.004)"}
+  singularity_length: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: dimensionless, reason: "relative spread 1.243 across perturbations; rotation alone changes it by +110%"}
+  frame_sector_ne_density: {admission: EXPLORATORY_ONLY, unit: fraction, reason: "image-frame geometry, not anatomy", rotation_invariant: false, translation_invariant: false}
+  frame_sector_nw_density: {admission: EXPLORATORY_ONLY, unit: fraction, reason: "image-frame geometry, not anatomy", rotation_invariant: false, translation_invariant: false}
+  frame_sector_sw_density: {admission: EXPLORATORY_ONLY, unit: fraction, reason: "image-frame geometry, not anatomy", rotation_invariant: false, translation_invariant: false}
+  frame_sector_se_density: {admission: EXPLORATORY_ONLY, unit: fraction, reason: "image-frame geometry, not anatomy", rotation_invariant: false, translation_invariant: false}
+  sector_density_range: {admission: EXPLORATORY_ONLY, unit: fraction, reason: "derived from frame sectors"}
+  n_sectors_above_median: {admission: EXPLORATORY_ONLY, unit: count, reason: "derived from frame sectors"}
+  a_frac: {admission: EXPLORATORY_ONLY, unit: fraction, depends_on_av: true, reason: "unvalidated A/V heuristic"}
+  a_width_p90_px: {admission: EXPLORATORY_ONLY, unit: working pixels, depends_on_av: true, reason: "unvalidated A/V heuristic"}
+  v_width_p90_px: {admission: EXPLORATORY_ONLY, unit: working pixels, depends_on_av: true, reason: "unvalidated A/V heuristic"}
+  av_width_ratio_p90: {admission: EXPLORATORY_ONLY, unit: ratio, depends_on_av: true, reason: "unvalidated A/V heuristic; the disc cancels so it is defined when the disc is not"}
+  width_quantisation_floor_dd: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: disc diameters, reason: "a QC quantity that is a deterministic function of image size and disc size"}
+  # ---- FORBIDDEN_FROM_FINAL_CLASSIFIER ----
+  disc_valid: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: flag, reason: "detector-validity metadata"}
+  disc_peak_prob: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: probability, reason: "detector confidence"}
+  disc_method: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: label, reason: "detector status"}
+  dd_px_work: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: working pixels, reason: "an absolute size; a camera fingerprint"}
+  dd_over_min_side: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: ratio, reason: "disc diameter relative to image size: pure acquisition geometry"}
+  disc_cx_frac: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "image-frame position"}
+  disc_cy_frac: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "image-frame position"}
+  disc_centre_offset_frac: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "framing/crop indicator"}
+  fov_valid: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: flag, reason: "QC metadata"}
+  fov_coverage_fraction: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "acquisition geometry"}
+  fov_n_components: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: count, reason: "QC metadata"}
+  fov_border_contact: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "black-border style indicator"}
+  fov_centroid_offset: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "framing indicator"}
+  fov_failure_reason: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: label, reason: "QC metadata"}
+  roi_coverage_ring_0_2dd: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "QC gate, not a measurement"}
+  roi_coverage_ring_2_3dd: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "QC gate"}
+  roi_coverage_ring_3_6dd: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "QC gate"}
+  roi_coverage_annulus: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "QC gate"}
+  roi_coverage_pole: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: fraction, reason: "QC gate"}
+  n_skel_px_disc: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: count, reason: "absolute count"}
+  measurement_version: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: label, reason: "provenance"}
+  work_resolution: {admission: FORBIDDEN_FROM_FINAL_CLASSIFIER, unit: pixels, reason: "provenance"}

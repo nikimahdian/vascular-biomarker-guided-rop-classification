@@ -168,9 +168,12 @@ def test_feature_contract_covers_every_numeric_feature():
     assert not c.duplicated(["feature_name", "feature_version"]).any(), (
         "duplicate (feature_name, feature_version) in the contract; note that a name may "
         "legitimately appear once per feature version, e.g. vessel_density in both tables")
-    for col in ("feature_name", "feature_version", "definition", "unit", "depends_on_disc",
-                "depends_on_fov", "depends_on_resolution", "clinical_status",
-                "missingness_policy", "allowed_in_classifier", "generation_script"):
+    for col in ("feature_name", "measurement_version", "feature_version",
+                "mathematical_definition", "unit", "roi_definition", "depends_on_disc",
+                "depends_on_fov", "depends_on_resolution", "depends_on_av",
+                "scale_invariant", "padding_invariant", "rotation_invariant",
+                "missingness_policy", "admission_status", "allowed_in_final_classifier",
+                "requires_expert_validation", "known_limitations", "generation_script"):
         assert col in c.columns, f"contract missing required field {col}"
 
 
