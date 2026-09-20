@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import cv2
@@ -54,12 +55,18 @@ def find_existing_mask(masks_dir: Path, image_path: str) -> Path | None:
 
     Allows restoring masks produced on another machine (different absolute path →
     different hash) without re-running segmentation.
+
+    The stem match must be EXACT. A plain glob(f"{stem}_*.png") is wrong: image stems such as
+    "..._S01_1" are a prefix of the sibling "..._S01_10", so the glob also matches the sibling's
+    mask and, when exactly one file matches, returns it. That silently paired 610 of 8870 images
+    with a different image's mask. A valid mask name is "<image_stem>_<8 hex>.png" and nothing else.
     """
     preferred = masks_dir / unique_mask_name(image_path)
     if preferred.exists():
         return preferred
     stem = Path(image_path).stem
-    matches = sorted(masks_dir.glob(f"{stem}_*.png"))
+    pat = re.compile(rf"^{re.escape(stem)}_[0-9a-f]{{8}}\.png$")
+    matches = sorted(p for p in masks_dir.glob(f"{stem}_*.png") if pat.match(p.name))
     if len(matches) == 1:
         return matches[0]
     return None
