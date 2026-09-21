@@ -161,6 +161,56 @@ def _topology(skel: np.ndarray, region: np.ndarray | None = None) -> dict:
     }
 
 
+def assign_av_branches(gc: np.ndarray, lab: np.ndarray, nlab: int, dist: np.ndarray) -> dict:
+    """The production per-branch A/V assignment, exposed for diagnostics.
+
+    This is the ONLY implementation of the rule. `measure()` calls it and consumes the same
+    fields, so a diagnostic caller and the production path cannot diverge. The mathematics are
+    unchanged from the pre-refactor inline block: the branch value is the median of the
+    background-corrected green channel over the branch's skeleton pixels; the split point is the
+    length-weighted median of the branch values; `is_a = value >= threshold`.
+
+    Behaviour-preserving diagnostic refactor. Nothing about threshold mathematics, branch
+    ordering, tie handling, green-channel correction, filtering or any A/V feature definition is
+    altered; the inline code was moved, not edited.
+    """
+    b_index: list = []
+    b_len: list = []
+    b_wpx: list = []
+    b_int: list = []
+    for i in range(1, nlab + 1):
+        cy, cx = np.nonzero(lab == i)
+        if len(cy) < 3:
+            continue
+        b_index.append(int(i))
+        b_len.append(int(len(cy)))
+        b_wpx.append(float(np.median(2.0 * dist[cy, cx])))
+        b_int.append(float(np.median(gc[cy, cx])))
+    res: dict = {
+        "branch_index": b_index, "length": b_len, "value": b_int, "width_px": b_wpx,
+        "n": len(b_int), "eligible": len(b_int) >= 6, "cut": None,
+        "threshold": float("nan"), "is_a": np.zeros(len(b_int), bool), "order": None,
+        "n_at_threshold": 0, "tie_fraction": float("nan"),
+        "a_frac_length": float("nan"), "a_frac_count": float("nan"),
+    }
+    if not res["eligible"]:
+        return res
+    wts = np.asarray(b_len, float)
+    vals = np.asarray(b_int, float)
+    order = np.argsort(vals)
+    cum = np.cumsum(wts[order])
+    cut = int(np.searchsorted(cum, cum[-1] / 2.0))
+    cut = min(max(cut, 0), len(order) - 1)
+    thr = float(vals[order][cut])
+    is_a = vals >= thr
+    res.update(cut=int(cut), threshold=thr, is_a=is_a, order=order,
+               n_at_threshold=int((vals == thr).sum()),
+               tie_fraction=float((vals == thr).mean()),
+               a_frac_length=float(wts[is_a].sum() / max(wts.sum(), 1)),
+               a_frac_count=float(is_a.mean()))
+    return res
+
+
 def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict, *,
             scale: float = 1.0, with_fractal: bool = True) -> dict:
     """All CLINICAL_MEASUREMENT_V1 features for one already-resampled image/mask pair."""
@@ -285,27 +335,16 @@ def measure(rgb: np.ndarray, mask: np.ndarray, disc: dict, *,
     lab, nlab = ndi.label(branches, structure=np.ones((3, 3), int))
     out["n_branches"] = float(nlab)
 
-    b_len, b_wpx, b_int = [], [], []
     gc = green - ndi.median_filter(green, size=31, mode="nearest")
-    for i in range(1, nlab + 1):
-        cy, cx = np.nonzero(lab == i)
-        if len(cy) < 3:
-            continue
-        b_len.append(len(cy))
-        b_wpx.append(float(np.median(2.0 * dist[cy, cx])))
-        b_int.append(float(np.median(gc[cy, cx])))
+    av = assign_av_branches(gc, lab, nlab, dist)
+    b_len = av["length"]
     out["branch_px_work"] = float(np.sum(b_len)) if b_len else 0.0
 
     # A/V per branch, length-weighted median split of background-corrected green
-    if len(b_int) >= 6:
+    if av["eligible"]:
         wts = np.asarray(b_len, float)
-        vals = np.asarray(b_int, float)
-        order = np.argsort(vals)
-        cum = np.cumsum(wts[order])
-        cut = int(np.searchsorted(cum, cum[-1] / 2.0))
-        cut = min(max(cut, 0), len(order) - 1)
-        is_a = vals >= vals[order][cut]
-        awpx = np.asarray(b_wpx, float)
+        is_a = av["is_a"]
+        awpx = np.asarray(av["width_px"], float)
         out["a_frac"] = float(wts[is_a].sum() / max(wts.sum(), 1))
         out["a_width_p90_px"] = float(np.percentile(awpx[is_a], 90)) if is_a.sum() >= 3 else np.nan
         out["v_width_p90_px"] = (float(np.percentile(awpx[~is_a], 90))

@@ -32,6 +32,18 @@ PER_STRATUM, TARGET = 90, 360
 AV_COLS = ["a_frac", "a_width_p90_px", "v_width_p90_px", "av_width_ratio_p90"]
 EXTRA = ["branch_px_work", "n_branches"]
 
+# ---------------------------------------------------------------- PREDECLARED GATE (run 3)
+# Locked BEFORE the third execution. Do not edit after the run starts.
+#   EXACT_FIELDS  : integer-valued quantities. They must be bit-identical, delta EXACTLY 0.0.
+#   FLOAT_FIELDS  : floating-point aggregates. Bit-identity is not physically guaranteed
+#                   across a code move (reduction order / BLAS paths), so the predeclared
+#                   tolerance is ATOL = 1e-12, which is ~1e-12 of the feature scale and
+#                   ~1e4x below float64 eps-accumulation on these magnitudes.
+#   NaN pattern   : must be identical for EVERY field (no row may gain or lose a value).
+PREDECLARED_ATOL = 1e-12
+EXACT_FIELDS = ["branch_px_work", "n_branches"]
+FLOAT_FIELDS = list(AV_COLS)
+
 
 def sha(p: Path) -> str:
     d = hashlib.sha256()
@@ -232,27 +244,47 @@ def main() -> None:
                       usecols=["image_path"] + AV_COLS + EXTRA)
     M = ref.merge(P, on="image_path", suffixes=("_old", "_new"))
     print(f"  merged rows            : {len(M)}")
-    checked, diffs, maxd = 0, 0, 0.0
+    print()
+    print("  PREDECLARED GATE (locked before this run; not edited afterwards)")
+    print(f"    exact fields (delta must be 0.0) : {EXACT_FIELDS}")
+    print(f"    float fields (|delta| <= {PREDECLARED_ATOL:.0e})   : {FLOAT_FIELDS}")
+    print("    NaN pattern must be identical for every field")
+    print()
+    checked, diffs, maxd, maxd_exact = 0, 0, 0.0, 0.0
+    row_bad = np.zeros(len(M), bool)
     for c in AV_COLS + EXTRA:
         a = M[f"{c}_old"].to_numpy(float)
         b = M[f"{c}_new"].to_numpy(float)
         nan_same = np.array_equal(np.isnan(a), np.isnan(b))
         fin = np.isfinite(a) & np.isfinite(b)
-        d = float(np.max(np.abs(a[fin] - b[fin]))) if fin.any() else 0.0
-        same = nan_same and (fin.sum() == np.isfinite(a).sum()) and d == 0.0
+        dv = np.abs(a[fin] - b[fin])
+        d = float(dv.max()) if dv.size else 0.0
+        tol = 0.0 if c in EXACT_FIELDS else PREDECLARED_ATOL
+        n_over = int((dv > tol).sum())
+        same = nan_same and (fin.sum() == np.isfinite(a).sum()) and n_over == 0
         checked += 1
-        maxd = max(maxd, d)
+        if c in EXACT_FIELDS:
+            maxd_exact = max(maxd_exact, d)
+        else:
+            maxd = max(maxd, d)
+        bad = ~np.isfinite(a) & np.isfinite(b)
+        bad |= np.isfinite(a) & ~np.isfinite(b)
+        bad[fin] |= dv > tol
+        row_bad |= bad
         if not same:
             diffs += 1
         print(f"  {c:24s} nan_pattern_same={nan_same}  max|delta|={d:.3e}  "
-              f"{'IDENTICAL' if same else 'DIFFERS'}")
+              f"tol={tol:.0e}  n_over_tol={n_over}  "
+              f"{'OK' if same else 'DIFFERS'}")
+    n_rows_diff = int(row_bad.sum())
     print()
     print(f"  AV_REFACTOR_CANONICAL_N                : {len(M)}")
     print(f"  AV_FEATURE_COLUMNS_CHECKED            : {checked}")
-    print(f"  AV_ROWS_EXACT_OR_NUMERICALLY_EQUIVALENT: {len(M) if diffs == 0 else 0}")
-    print(f"  AV_ROWS_DIFFERENT                     : {diffs}")
-    print(f"  AV_MAX_ABS_DELTA                      : {maxd:.3e}")
-    eq_pass = (diffs == 0 and maxd == 0.0)
+    print(f"  AV_ROWS_EXACT_OR_NUMERICALLY_EQUIVALENT: {len(M) - n_rows_diff}")
+    print(f"  AV_ROWS_DIFFERENT                     : {n_rows_diff}")
+    print(f"  AV_MAX_ABS_DELTA_FLOAT_FIELDS         : {maxd:.3e}  (atol {PREDECLARED_ATOL:.0e})")
+    print(f"  AV_MAX_ABS_DELTA_EXACT_FIELDS         : {maxd_exact:.3e}  (atol 0e+00)")
+    eq_pass = (n_rows_diff == 0 and maxd <= PREDECLARED_ATOL and maxd_exact == 0.0)
     print(f"  AV_FULL_BEHAVIOR_EQUIVALENCE          : {'PASS' if eq_pass else 'FAIL'}")
     if not eq_pass:
         print("  STOP — do not run the battery")
@@ -268,7 +300,10 @@ def main() -> None:
 
     if not (eq_pass and ctrl == 0.0):
         print("\n  TASK5B_N2_CLOSURE = INCOMPLETE")
-        json.dump({"equivalence": eq_pass, "control": ctrl, "diffs": diffs},
+        json.dump({"equivalence": eq_pass, "control": ctrl, "diffs": n_rows_diff,
+                   "predeclared_atol": PREDECLARED_ATOL,
+                   "max_abs_delta_float": maxd, "max_abs_delta_exact": maxd_exact,
+                   "exact_fields": EXACT_FIELDS},
                   open(ROOT / "_private_audit/task5b_n2_gate.json", "w"), indent=2)
         return
 
@@ -386,7 +421,11 @@ def main() -> None:
         "AV_FULL_BEHAVIOR_EQUIVALENCE": "PASS" if eq_pass else "FAIL",
         "AV_SAMPLE_N": int(len(sel)), "BASELINE_BRANCH_N": int(DG.n.sum()),
         "DIAGNOSTIC_CONTROL_MAX_DELTA": ctrl,
+        "PREDECLARED_ATOL": PREDECLARED_ATOL,
+        "EXACT_FIELDS": EXACT_FIELDS,
+        "AV_ROWS_DIFFERENT": n_rows_diff,
         "AV_MAX_ABS_DELTA_EQUIVALENCE": maxd,
+        "AV_MAX_ABS_DELTA_EXACT_FIELDS": maxd_exact,
         "branch_set_mismatches": mism,
         "OVERALL_MAX_BRANCH_FLIP_RATE": float(F.flip_rate.max()),
         "OVERALL_MEAN_BRANCH_FLIP_RATE": float(F.flip_rate.mean()),
