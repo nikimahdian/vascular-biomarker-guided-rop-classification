@@ -347,6 +347,148 @@ case per geometry and stable controls are written by `scripts/task5b_h_mechanism
 `_private_audit/task5b_h_qc_*.png`; the mechanism table is `_private_audit/task5b_h_mechanism.csv`.
 No disease label is read at any point in this closure.
 
+### FOV BORDER IMPACT ON ALL FIVE FINAL_PRIMARY BIOMARKERS — Task 5B-H2
+
+Task 5B-H showed the FOV detector is border-fragile. This closure asks how far that fragility
+travels through the production measurement path into the five `FINAL_PRIMARY` features.
+
+Same frozen evidence, nothing resampled or added: the **same 328-image sample** (verified set-equal
+to the Task-5B-H baseline table), the **same 8 brightness and 22 border conditions**, the same
+loader. `measure(rgb, mask, {}, with_fractal=True)` — the production entry point — is called for the
+baseline and for all 30 perturbations, so all five features come from the production path and no
+parallel replica exists. The vessel mask is carried through the same transform as the RGB and is
+identical in content across all 31 measurements. Module sha256
+`6aea0d6856d75e205f88201cfc20311a4d13acfdac839aa5ac8bfac3a1f13542`. 9,840 condition rows, 0 errors.
+No classifier trained, no threshold changed, no feature removed, no FOV redesign, feature table not
+regenerated. Classification cuts were written into the script before it ran.
+
+**D — how the FOV enters each feature, traced in the code (not inferred from the name):**
+
+| feature | uses FOV | how |
+|---|---|---|
+| `vessel_density_fov` | yes | **two** ways: numerator `mask[fov].sum()` is FOV-restricted vessel pixels; denominator `fov_px` is the FOV area |
+| `skel_density_fov` | yes | **one** way: numerator `len(nonzero(skeletonize(mask)))` is the **whole-frame** skeleton and does not involve the FOV at all; denominator is `fov_px` |
+| `fractal_d0`, `fractal_d1`, `fractal_d2` | yes | `_fractal(mask & fov)` — the FOV is the **support domain** of the binary image handed to `MultifractalVBMs` |
+
+**E — feature-level deltas.** Brightness perturbs none of the five materially; the border family
+perturbs all five.
+
+| feature | perturbation | med \|Δ\| | p95 \|Δ\| | max \|Δ\| | med rel | p95 rel | max rel | >1 % | >5 % | >10 % |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `vessel_density_fov` | brightness | 0.00000 | 0.00141 | 0.15463 | 0.00000 | +0.00171 | +0.0728 | 7.5 % | 1.8 % | 0.8 % |
+| `skel_density_fov` | brightness | 0.00000 | 0.00093 | 0.06392 | 0.00000 | 0.00000 | +0.0435 | 12.8 % | 4.8 % | 2.6 % |
+| `fractal_d0` | brightness | 0.00000 | 0.01014 | 0.12089 | 0.00000 | +0.00563 | +0.0959 | 4.1 % | 0.5 % | 0.0 % |
+| `fractal_d1` | brightness | 0.00000 | 0.01349 | 0.16226 | 0.00000 | +0.00517 | +0.1348 | 5.0 % | 0.8 % | 0.3 % |
+| `fractal_d2` | brightness | 0.00000 | 0.01378 | 0.17567 | 0.00000 | +0.00572 | +0.1494 | 5.2 % | 1.0 % | 0.3 % |
+| `vessel_density_fov` | **border** | 0.00072 | 0.01387 | 0.17660 | −0.00124 | +0.05097 | **+2.1876** | **47.3 %** | 19.9 % | 7.5 % |
+| `skel_density_fov` | **border** | 0.00044 | 0.00655 | 0.06472 | **−0.01676** | +0.02532 | **+4.2915** | **59.0 %** | **42.1 %** | **24.0 %** |
+| `fractal_d0` | **border** | **0.02795** | 0.12121 | 0.23372 | **−0.01782** | +0.01775 | +0.1196 | **71.2 %** | 21.2 % | 2.7 % |
+| `fractal_d1` | **border** | **0.03160** | 0.12657 | 0.36265 | **−0.01702** | +0.03649 | +0.1411 | **74.9 %** | 22.8 % | 3.6 % |
+| `fractal_d2` | **border** | **0.03198** | 0.12513 | 0.39589 | **−0.01631** | +0.04097 | +0.1607 | **75.2 %** | 23.2 % | 3.9 % |
+
+Outliers are not hidden: the worst border cases are `+219 %` on `vessel_density_fov`, `+429 %` on
+`skel_density_fov`, and absolute fractal changes of 0.23 / 0.36 / 0.40 (features sit near 1.2–1.5).
+
+**F — source and geometry.** Border sensitivity is not concentrated in one cohort. All three sources
+move in the same direction and by comparable magnitude (`vessel_density_fov` median rel: farfum_rop
+−0.0073, farabi −0.0012, plus −0.0000; `skel_density_fov`: −0.0468, −0.0017, −0.0353). The fractals
+are the most uniform of all: median −0.014 to −0.019 in every source and every geometry, i.e. a
+**systematic negative bias of ≈1.5–2 %** rather than a source-specific artefact. Geometry matters
+only for the two density features (1440×1080 has the smallest median, 1240×1240 and 640×480 the
+largest for `skel_density_fov`, −0.087 and −0.051).
+
+**G — FOV error vs biomarker error (Spearman, border rows, n = 7,216).**
+
+```
+vessel_density_fov  dice vs |delta| = -0.8959   relArea vs |delta| = +0.7063
+skel_density_fov    dice vs |delta| = -0.9595   relArea vs |delta| = +0.8125
+fractal_d0          dice vs |delta| = -0.0037   relArea vs |delta| = +0.0787
+fractal_d1          dice vs |delta| = -0.0143   relArea vs |delta| = +0.0711
+fractal_d2          dice vs |delta| = -0.0107   relArea vs |delta| = +0.0659
+```
+
+The two density features track FOV error almost perfectly; the fractals are **nearly orthogonal to
+it**. That near-zero correlation is the key diagnostic: the fractal error is *not* driven by how much
+the FOV mask moved.
+
+**H/I — mechanism, per feature. These are three different pathways, not one.**
+
+1. **`skel_density_fov` — pure denominator, exactly.** Its numerator is the whole-frame skeleton,
+   which the FOV never touches (`skeleton_px_work` changed in **0 of 9,840 rows**). The measured
+   delta therefore obeys `Δ = S·(1/fp_perturbed − 1/fp_baseline)` with no free parameter, and the
+   observed signed delta matches that prediction to **max |difference| = 9.8e-17**. Every bit of
+   `skel_density_fov` border sensitivity is the FOV area in the denominator, and it is the most
+   frequently affected feature (>5 % in 42 % of border rows) precisely because nothing damps it.
+2. **`vessel_density_fov` — denominator and inclusion, partially cancelling.** Splitting the change
+   into a denominator-only term (`V_base/fp_p − V_base/fp_b`) and an inclusion-only term
+   (`V_p/fp_p − V_base/fp_p`) gives median |0.00246| and |0.00121| against a median total of
+   |0.00072|, with maxima 0.346 and 0.170. The two terms have opposite sign in the common case — a
+   larger FOV both enlarges the denominator and admits more (low-density peripheral) vessel pixels —
+   so the typical error is small while either term alone is large. The extreme cases are where the
+   cancellation breaks.
+3. **`fractal_d0/d1/d2` — the multifractal computation domain, not the vascular support.** The FOV
+   reaches these features only as the support of the binary input, so the naive expectation is that
+   they change because vessels are added or removed. The data say otherwise. Among border rows,
+   2,485 have an **identical** support pixel count, and their fractal change (median 0.0332 / 0.0354
+   / 0.0359) is **larger** than in the 4,731 rows where the support did change (0.0252 / 0.0298 /
+   0.0300); the rank correlation between |support change| and |fractal change| is only +0.14 to
+   +0.16. A dedicated experiment settles it: take the baseline binary input and merely embed it,
+   unchanged, in a zero-padded canvas the size of the border condition — no FOV call, no vessel
+   pixel added or removed — and recompute. D0/D1/D2 move by **median −2.29 %, −2.68 %, −2.78 %**
+   (p95 +3.1 %, +4.7 %, +4.9 %), which reproduces the sign and magnitude of the observed border
+   medians (−1.78 %, −1.70 %, −1.63 %). **The fractal border sensitivity is a canvas-extent effect
+   on the multifractal estimator, largely independent of the FOV mask.** The three behave alike but
+   not identically: D2 moves most, D0 least, in every breakdown.
+
+**J — NaN and failure transitions.** No feature changed finiteness anywhere: 0 finite→NaN and 0
+NaN→finite for all five, in both families, over 9,840 rows (no baseline NaN among the five on this
+sample). FOV validity itself: brightness 0 valid→invalid, 8 invalid→valid; border 5 valid→invalid,
+50 invalid→valid. The fragility therefore shows up as **value error, not as new missingness**.
+
+**K — visual QC.** 16 montages in `_private_audit/task5b_h2_qc_*.png`, one per worst case, each
+showing the original, the perturbed image, the baseline FOV contour, the perturbed FOV contour, the
+fixed vessel mask and the baseline/perturbed feature values. Worst cases: `vessel_density_fov`
+0.0807→0.2573; `skel_density_fov` 0.0768→0.0121; `fractal_d0` 1.5001→1.2664; `fractal_d1`
+1.4748→1.1122; `fractal_d2` 1.4927→1.0968. Case list: `_private_audit/task5b_h2_qc_cases.csv`.
+
+**M — impact classification.**
+
+| feature | status | justification |
+|---|---|---|
+| `vessel_density_fov` | `SEVERELY_BORDER_SENSITIVE` | 47.3 % of border rows move >1 %, 19.9 % >5 %; worst case +219 %; FOV error tracks it at ρ = −0.90; mechanism is a two-term cancellation that fails in the tail |
+| `skel_density_fov` | `SEVERELY_BORDER_SENSITIVE` | most frequently affected: 59.0 % >1 %, **42.1 % >5 %**, 24.0 % >10 %; unmitigated pure denominator effect confirmed analytically to 1e-16; ρ = −0.96 with FOV error |
+| `fractal_d0` | `BORDER_SENSITIVE` | 71.2 % of border rows move >1 % and median error is 1.78 %, but the FOV-independent canvas experiment already produces 2.29 %, so the effect is bounded near the canvas bias; >10 % in only 2.7 %; ρ ≈ 0 |
+| `fractal_d1` | `BORDER_SENSITIVE` | same structure as D0, slightly larger: median 1.70 %, >10 % in 3.6 %, max 14.1 %, canvas bias 2.68 % |
+| `fractal_d2` | `BORDER_SENSITIVE` | largest of the three: median 1.63 %, >10 % in 3.9 %, max 16.1 %, canvas bias 2.78 % |
+
+**N/O — decision.** The fragility is not confined to `vessel_density_fov`: **all five**
+`FINAL_PRIMARY` features carry it, two of them severely, through **three distinct mechanisms** — a
+denominator, a denominator-plus-inclusion pair, and the multifractal canvas domain. Because it
+propagates into multiple primary biomarkers and produces recurring errors in the primary feature
+matrix, section O requires:
+
+```
+TASK5B_H2_SAMPLE_N                    : 328
+FINAL_PRIMARY_FEATURE_N               : 5
+VESSEL_DENSITY_FOV_STATUS             : SEVERELY_BORDER_SENSITIVE
+SKEL_DENSITY_FOV_STATUS               : SEVERELY_BORDER_SENSITIVE
+FRACTAL_D0_STATUS                     : BORDER_SENSITIVE
+FRACTAL_D1_STATUS                     : BORDER_SENSITIVE
+FRACTAL_D2_STATUS                     : BORDER_SENSITIVE
+PRIMARY_FEATURES_AFFECTED_N           : 5
+PRIMARY_FEATURES_SEVERELY_AFFECTED_N  : 2
+FOV_FAILURE_PROPAGATES_TO_FRACTALS    : YES
+FOV_REDESIGN_REQUIRED_BEFORE_TRAINING : YES
+FINAL_PRIMARY_REQUIRES_REVIEW         : YES
+TASK5B_H2_STATUS                      : COMPLETE
+```
+
+`FOV_REDESIGN_REQUIRED_BEFORE_TRAINING = YES` is a statement about the **measurement**, and it is
+conditional on the acquisition path the same way Task 5B-H was: project images carry no synthetic
+border, so the border result bounds what any export, letterbox or border-adding step would do. The
+brightness result is the part that applies unconditionally, and it is benign — median error exactly
+`0.00000` for all five features. Nothing was redesigned here; the redesign is a separate decision.
+
 ---
 
 ## I. Area, length and absolute counts — scale dependence
@@ -1059,6 +1201,15 @@ corrected classifier is fitted.
    12.6 %. `FINAL_PRIMARY_REQUIRES_REVIEW = YES`; the feature was **not** demoted and the FOV rule
    was **not** redesigned. This constrains any model whose inputs pass through an export, letterbox
    or border-adding step, and must be resolved before disease-model training.
+4. **The FOV fragility is not confined to that one feature (Task 5B-H2).** All five `FINAL_PRIMARY`
+   features move under the same 22 border conditions, through three separate mechanisms:
+   `skel_density_fov` is a pure FOV-area denominator (analytic match to 1e-16, >5 % error in 42.1 %
+   of rows), `vessel_density_fov` combines a denominator and an inclusion term that partially cancel
+   (+219 % worst case), and `fractal_d0/d1/d2` shift by ~1.6–2.8 % median because the multifractal
+   estimator responds to the **canvas extent** — a zero-padded embed of the *identical* binary
+   support reproduces the effect without any FOV involvement. Brightness perturbs none of the five
+   (median relative error exactly 0.00000, no new NaN anywhere). `FOV_REDESIGN_REQUIRED_BEFORE_
+   TRAINING = YES`.
 
 ---
 
@@ -1125,3 +1276,29 @@ TASK5B_H_CLOSURE                  : PASS
 
 `TASK5B_H_CLOSURE = PASS` means the closure task was executed against all eleven of its own
 requirements. It does **not** mean the FOV passed: `FOV_ROBUSTNESS = FAIL` is the finding.
+
+Task 5B-H2 then measured how far that finding propagates. Every one of the five `FINAL_PRIMARY`
+features is affected under border perturbations through three different mechanisms, and none of the
+five is affected by brightness perturbations (median relative error exactly `0.00000`):
+
+| feature | status | border median rel | border p95 rel | border max rel | >5 % of rows |
+|---|---|---|---|---|---|
+| `vessel_density_fov` | `SEVERELY_BORDER_SENSITIVE` | −0.00124 | +0.05097 | +2.1876 | 19.9 % |
+| `skel_density_fov` | `SEVERELY_BORDER_SENSITIVE` | −0.01676 | +0.02532 | +4.2915 | 42.1 % |
+| `fractal_d0` | `BORDER_SENSITIVE` | −0.01782 | +0.01775 | +0.1196 | 21.2 % |
+| `fractal_d1` | `BORDER_SENSITIVE` | −0.01702 | +0.03649 | +0.1411 | 22.8 % |
+| `fractal_d2` | `BORDER_SENSITIVE` | −0.01631 | +0.04097 | +0.1607 | 23.2 % |
+
+```
+TASK5B_H2_SAMPLE_N                    : 328
+FINAL_PRIMARY_FEATURE_N               : 5
+PRIMARY_FEATURES_AFFECTED_N           : 5
+PRIMARY_FEATURES_SEVERELY_AFFECTED_N  : 2
+FOV_FAILURE_PROPAGATES_TO_FRACTALS    : YES
+FOV_REDESIGN_REQUIRED_BEFORE_TRAINING : YES
+FINAL_PRIMARY_REQUIRES_REVIEW         : YES
+TASK5B_H2_STATUS                      : COMPLETE
+```
+
+No FOV algorithm was redesigned, no feature was demoted or removed, and no classifier was trained.
+The redesign is now a required, separately-decided step before disease-model training.
