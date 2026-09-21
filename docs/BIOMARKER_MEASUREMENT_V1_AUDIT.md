@@ -489,6 +489,172 @@ border, so the border result bounds what any export, letterbox or border-adding 
 brightness result is the part that applies unconditionally, and it is benign — median error exactly
 `0.00000` for all five features. Nothing was redesigned here; the redesign is a separate decision.
 
+### TASK 5B-H3 — ONE PREDECLARED BORDER-ROBUST CANDIDATE: `CLINICAL_MEASUREMENT_V2_CANDIDATE`
+
+V1 stays the production state, untouched and reproducible:
+`src/biomarker/clinical_measurement_v1.py` sha256
+`6aea0d6856d75e205f88201cfc20311a4d13acfdac839aa5ac8bfac3a1f13542`; feature table
+`f1c41e923ae29d4e228097536765f5e7399963062253ad925657a077cddc10c0`; measurement table
+`db123ac5f663f4925ac9fff52d204bede85963966794062d1855e315a4e38ffc`. The candidate lives in a
+separate module, `src/biomarker/clinical_measurement_v2_candidate.py`, and changes exactly two
+things. `measure_v2()` substitutes them inside V1 and calls **V1's own `measure()`**, so everything
+between the FOV and the fractal features is V1's code, not a replica.
+
+**B1 — border-independent FOV.** Otsu is estimated on the frame with contiguous near-constant edge
+rows/columns removed (`CONST_TOL = 2.0` grey levels, `MIN_CONTENT_FRAC = 0.50`), then applied to the
+full frame; the same detected constant edges are also excluded from the **returned mask**. All other
+steps are V1's, byte for byte: `remove_small_objects`/`remove_small_holes` at `max(64, 0.001·h·w)`,
+`binary_closing(disk(3))`, largest-component selection, failure criteria `coverage < 0.15` /
+`> 0.985` / `largest/sum < 0.90`. The mask-exclusion half was added after the development check
+(10 images, 6 conditions) showed externally added constant padding could still enter the mask, and
+before the locked run started — recorded in the manifest, no new constant, nothing tuned on outcomes.
+
+**B2 — border-independent fractal domain.** The same `MultifractalVBMs` estimator, run on a square
+window centred on the FOV bounding-box centre, `side = ceil(max(bbox)·(1+2·0.10))` rounded up to 8,
+zero outside the frame. Adding constant padding translates the bbox and its centre but not the
+window's content, so the domain array is identical.
+
+**Development vs locked evaluation.** The 328-image Task-5B-H/H2 sample was used only to reproduce
+the known failure, debug and confirm execution. The decision rests on a **new locked sample of 450
+images**, verified disjoint from all 328, stratified over source × geometry × split (plus 270 /
+farabi 90 / farfum_rop 90; all five geometries; train 150 / val 150 / test 150). Conditions: the same
+8 brightness + 22 border conditions, plus a **6-condition novel border set** frozen before the run
+(widths 0.035 and 0.18, grey levels 20 and 90, two asymmetric combinations). Acceptance gate G1–G7
+was written into `_private_audit/task5b_h3_manifest.json` before the run and not changed afterwards.
+16,650 condition rows, 0 errors. No disease label, no classifier, no `SEG_CURRENT_V1` change, no
+feature removed, no regeneration of the 8,870-row table.
+
+**G — FOV robustness, V1 vs V2 (12,600 border rows).**
+
+| endpoint | V1 | V2 |
+|---|---|---|
+| median FOV Dice | 0.991526 | **0.999894** |
+| mean FOV Dice | 0.965228 | **0.988830** |
+| 1st-percentile Dice | 0.736531 | 0.782499 |
+| minimum Dice | 0.000000 | 0.459247 |
+| fraction Dice < 0.99 | 0.4913 | **0.1200** |
+| fraction Dice < 0.90 | 0.0994 | **0.0381** |
+| relative area, median | +0.002979 | **−0.000090** |
+| relative area, p95 | +0.346622 | **+0.068011** |
+| centroid displacement, median | 0.002276 | **0.000017** |
+| FOV valid → invalid | 30 | **444** |
+
+V2 improves the typical case by an order of magnitude and is uniform across sources and geometries
+(V2 median Dice 0.99983–0.99996 everywhere; V1 ranges 0.943 for 1240×1240 to 0.99979 for 1440×1080).
+It also **regresses validity**: 444 rows where a valid V1 baseline becomes an invalid V2 FOV, against
+30 for V1.
+
+**H — the five FINAL_PRIMARY features, border family.**
+
+| feature | version | median rel | p95 rel | max rel | >1 % | >5 % | >10 % |
+|---|---|---|---|---|---|---|---|
+| `vessel_density_fov` | V1 | −0.00104 | +0.03685 | +0.43042 | 44.4 % | 19.6 % | 9.3 % |
+| `vessel_density_fov` | **V2** | **+0.00008** | **+0.01696** | +0.91074 | **12.2 %** | **5.8 %** | **2.4 %** |
+| `skel_density_fov` | V1 | −0.00476 | +0.01819 | +1.91954 | 53.7 % | 38.8 % | 23.8 % |
+| `skel_density_fov` | **V2** | **+0.00009** | +0.05224 | +2.35496 | **12.5 %** | **10.5 %** | **7.2 %** |
+| `fractal_d0` | V1 | −0.01722 | +0.01761 | +0.11616 | 71.2 % | 18.2 % | 1.7 % |
+| `fractal_d0` | **V2** | **0.00000** | **+0.00904** | +0.17054 | **10.1 %** | **1.8 %** | 0.13 % |
+| `fractal_d1` | V1 | −0.01710 | +0.03009 | +0.13864 | 74.6 % | 18.1 % | 1.7 % |
+| `fractal_d1` | **V2** | **0.00000** | **+0.01148** | +0.17330 | **11.4 %** | **2.0 %** | 0.17 % |
+| `fractal_d2` | V1 | −0.01661 | +0.03388 | +0.15812 | 74.8 % | 18.5 % | 1.9 % |
+| `fractal_d2` | **V2** | **0.00000** | **+0.01103** | +0.19241 | **11.8 %** | **1.8 %** | 0.18 % |
+
+Every feature improves in the typical case; the density features improve 3.6× and 4.3× in the >1 %
+fraction, and the three fractals stop moving at the median **exactly** (`0.00000`). The tails do not
+disappear: the worst density errors get slightly larger, because the rows where V2's FOV collapses
+produce a much smaller denominator. Under brightness both versions are unchanged and benign (median
+`0.00000` for all five).
+
+**I — fractal zero-padding control (mandatory).** The identical binary support and the identical FOV,
+translated into larger zero canvases, with no FOV detection involved:
+
+| feature | V1 median \|rel\| | V1 max | V2 median \|rel\| | V2 max |
+|---|---|---|---|---|
+| `fractal_d0` | 0.02599 | 0.11383 | **0.00000** | 0.03757 |
+| `fractal_d1` | 0.02722 | 0.12934 | **0.00000** | 0.04258 |
+| `fractal_d2` | 0.02880 | 0.13922 | **0.00000** | 0.04350 |
+
+The canvas mechanism is resolved exactly: with an unchanged support the V2 fractals are bit-identical
+under padding, where V1 moved by ~2.6–2.9 % at the median. Residual V2 maxima come only from cases
+where the FOV itself changed, which the control does not exercise.
+
+**J — missingness.** Border family: V1 generates 3 finite→NaN transitions, V2 generates **0**. No
+baseline NaN among the five features on this sample.
+
+**K — native-image drift.** On unperturbed images V2's FOV equals V1's (median Dice `1.000000`, p05
+0.985650, min 0.812880) and validity is unchanged in both directions (0 lost, 0 gained, of 450). The
+two density features are unchanged at the median (`0.00000`; >5 % in 1.1 % and 3.6 % of images). The
+fractals move by construction, `−0.0346 / −0.0351 / −0.0348` at the median, because the analysis
+domain changed; 29–30 % of native images move more than 5 %. **Without expert FOV annotation nothing
+here shows V2 is more anatomically correct than V1** — the native fractal shift is a definition
+change of the same size as the border effect it was meant to remove, and both readings are reported,
+not adjudicated.
+
+**Mechanism of the V2 validity regression — identified, not speculated.** Of the 444 rows, **375 are
+`novel_gray90_w2`** and 45 are `dark_gray_40_w2`; the remaining 24 are spread thinly. Re-measuring a
+28-row sample gives `coverage_below_15pct` 18 and `fragmented_bright_region` 10, with a median
+coverage of 0.1430. The pathway is: a border whose grey level sits **above** the retinal background
+(90, and 40 on dark images) survives `green > thr` as a bright ring; `binary_closing(disk(3))`
+connects that ring to the optic disc, and the **largest connected component becomes the border ring
+rather than the retina**; B1's mask exclusion then deletes exactly that ring, leaving little or
+nothing, and the coverage and fragmentation criteria fire. V2's mask exclusion is therefore correct
+for its stated purpose and simultaneously **incompatible with a component-selection rule that can
+choose the padding**. The residual Dice tails have the same root: `overwrite_all_w2` (0.9342) and
+`overwrite_lr_w2` (0.9847) alter the retinal content itself, and `irregular_frame_w3` (0.9870) and
+`tb_thick_w3` (0.9875) sit just below the per-condition bar for the same ring-selection reason.
+
+**N/O — gate outcome: 6 of 12 checks pass.**
+
+```
+G1_median_dice                     : PASS   (0.999894 >= 0.999)
+G1_p01_dice                        : FAIL   (0.782499 <  0.95)
+G1_every_condition                 : FAIL   (worst condition median 0.9342 < 0.99)
+G2_no_recurrent_invalid            : FAIL   (444 > 5)
+G3_vessel_density                  : FAIL   (12.2 % > 5 %)
+G3_skel_density                    : FAIL   (12.5 % > 5 %)
+G4_canvas_d0 / d1 / d2             : PASS   (median |rel| 0.00000 <= 0.005)
+G5_no_new_nan                      : PASS   (0)
+G6_subgroups                       : FAIL
+G7_native_validity                 : PASS   (0 of 450)
+FOV_BORDER_ROBUSTNESS_V2           : FAIL
+```
+
+Per the predeclared stop rule nothing was tuned, no V3 was written, the feature table was **not**
+regenerated and no classifier was trained. The candidate is a **partial** success and is recorded as
+such: the fractal canvas mechanism is solved exactly, the typical FOV and feature error drops by
+3.6–10×, and the brightness behaviour is untouched — but the gate fails on the per-condition Dice
+floor, on validity, and on the density error fractions, all through one identified interaction between
+border exclusion and largest-component selection.
+
+```
+TASK5B_H3_CANDIDATE                      : CLINICAL_MEASUREMENT_V2_CANDIDATE
+V1_FROZEN                                : YES
+V2_PREDECLARED_BEFORE_LOCKED_EVAL        : YES
+DEVELOPMENT_SAMPLE_N                     : 328
+LOCKED_EVALUATION_SAMPLE_N               : 450
+LOCKED_SAMPLE_DISJOINT_FROM_DEVELOPMENT  : YES
+FOV_BORDER_ROBUSTNESS_V1                 : FAIL
+FOV_BORDER_ROBUSTNESS_V2                 : FAIL
+VESSEL_DENSITY_BORDER_PROBLEM_RESOLVED   : NO
+SKEL_DENSITY_BORDER_PROBLEM_RESOLVED     : NO
+FRACTAL_ZERO_PADDING_D0_RESOLVED         : YES
+FRACTAL_ZERO_PADDING_D1_RESOLVED         : YES
+FRACTAL_ZERO_PADDING_D2_RESOLVED         : YES
+NEW_NAN_FAILURES                         : NO
+SOURCE_OR_GEOMETRY_SPECIFIC_FAILURE      : NO   (V2 is uniform; the regression is condition-specific:
+                                                grey-90 and grey-40 borders, 420 of 444 rows)
+NATIVE_V1_V2_DRIFT_REVIEWED              : YES
+CLINICAL_MEASUREMENT_V2_CANDIDATE_STATUS : NOT_SUPPORTED
+FULL_8870_REGENERATION_ALLOWED           : NO
+DISEASE_MODEL_TRAINING_ALLOWED           : NO
+TASK5B_H3_STATUS                         : INCOMPLETE
+```
+
+The failure is returned for a separate decision, as the task requires: the next candidate has to fix
+component selection against a selectable padding, which is a different change from the one tested
+here, and it must be predeclared and re-evaluated on a new locked sample rather than tuned on this
+one.
+
 ---
 
 ## I. Area, length and absolute counts — scale dependence
@@ -1302,3 +1468,37 @@ TASK5B_H2_STATUS                      : COMPLETE
 
 No FOV algorithm was redesigned, no feature was demoted or removed, and no classifier was trained.
 The redesign is now a required, separately-decided step before disease-model training.
+
+Task 5B-H3 then built and tested **one** predeclared candidate against that requirement, on a new
+locked sample of 450 images disjoint from the 328 development images, with the acceptance gate
+written into the manifest before the run. Result: **6 of 12 gate checks pass**, so the candidate is
+not supported and nothing was regenerated.
+
+| endpoint | V1 | V2 candidate |
+|---|---|---|
+| border median FOV Dice | 0.991526 | **0.999894** |
+| border fraction Dice < 0.99 | 49.1 % | **12.0 %** |
+| border FOV valid → invalid | 30 | **444** |
+| `vessel_density_fov` border >1 % | 44.4 % | **12.2 %** |
+| `skel_density_fov` border >1 % | 53.7 % | **12.5 %** |
+| fractal border median rel | −1.7 % | **0.00000** |
+| zero-padding control, median \|rel\| | 2.60–2.88 % | **0.00000** |
+| new finite→NaN, border | 3 | **0** |
+
+```
+TASK5B_H3_CANDIDATE                      : CLINICAL_MEASUREMENT_V2_CANDIDATE
+FOV_BORDER_ROBUSTNESS_V2                 : FAIL   (6 / 12 gate checks)
+FRACTAL_ZERO_PADDING_D0/D1/D2_RESOLVED   : YES / YES / YES
+VESSEL_DENSITY_BORDER_PROBLEM_RESOLVED   : NO
+SKEL_DENSITY_BORDER_PROBLEM_RESOLVED     : NO
+CLINICAL_MEASUREMENT_V2_CANDIDATE_STATUS : NOT_SUPPORTED
+FULL_8870_REGENERATION_ALLOWED           : NO
+DISEASE_MODEL_TRAINING_ALLOWED           : NO
+FINAL_PRIMARY_REQUIRES_REVIEW            : YES
+TASK5B_H3_STATUS                         : INCOMPLETE
+```
+
+Measured partial success, with the residual failure traced to one interaction: excluding the
+detected constant border from the FOV mask is incompatible with a largest-component rule that can
+select the border ring itself, which is what invalidates 375 grey-90 and 45 grey-40 rows. That fix is
+a different change and needs its own predeclaration and its own locked sample.
