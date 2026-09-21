@@ -250,6 +250,103 @@ Deterministic QC quantities are recorded for **every** image — `fov_coverage_f
 `fov_n_components`, `fov_border_contact`, `fov_centroid_offset`, `fov_failure_reason` — so a failed
 FOV is visible rather than silent. All five are QC-only and `FORBIDDEN_FROM_FINAL_CLASSIFIER`.
 
+### FOV BRIGHTNESS / BORDER ROBUSTNESS CLOSURE — Task 5B-H
+
+This is a **different test from the synthetic padding-invariance check tabulated above**. That check
+placed a synthetic circular/rectangular retina on a synthetic canvas and confirmed the *geometry* of
+the mask arithmetic. This closure keeps **real project images and their real `SEG_CURRENT_V1` vessel
+masks** and perturbs the photograph, which is the condition the feature actually has to survive.
+
+Frozen before testing, not modified: `src/biomarker/clinical_measurement_v1.py::retinal_fov`,
+file sha256 `6aea0d6856d75e205f88201cfc20311a4d13acfdac839aa5ac8bfac3a1f13542`. Rule as implemented —
+`thr = threshold_otsu(green)`, `binimg = green > thr`, `remove_small_objects` / `remove_small_holes`
+at `max(64, 0.001·h·w)`, `binary_closing(disk(3))`, keep the largest component; failure when
+`coverage < 0.15`, `coverage > 0.985`, or `largest/sum < 0.90`. Vessel mask fixed across every
+condition, so every density change is FOV detection only. No threshold was tuned after seeing results.
+
+**Harness faithfulness.** Baseline `vessel_density_fov` recomputed on 328 project images matches the
+frozen table to `9.71e-17`, `fov_valid` mismatches 0, `fov_coverage_fraction` to `5.55e-17`.
+
+Sample (deterministic, label-free): 328 images stratified by source × geometry × native-brightness
+tercile — `plus` 180 / `farabi` 88 / `farfum_rop` 60; geometries 1600×1200 88, 1280×960 60,
+640×480 60, 1240×1240 60, 1440×1080 60; splits train 207 / val 58 / test 63; native grey level
+35.3–128.9. Selection used source, geometry, brightness and path order only.
+
+**Disclosed revision between two runs of this closure.** The first run selected 178 images, short of
+the `N ≥ 300` requirement, and reported only the raw pre-morphology component count. A second run
+raised the sample to 328 (a hard requirement of the task, not an outcome-driven choice), added a
+post-morphology component diagnostic, and reported the primary endpoint on the baseline-valid subset
+in addition to all images, because `vessel_density_fov` is undefined where the baseline FOV detection
+itself failed. No FOV threshold, no condition and no class definition was changed, and the first
+run's condition table is kept as evidence in `_private_audit/run1_conditions.csv` (5,340 rows). Both
+runs agree on the verdict.
+
+| family | median FOV Dice | min | pairs with Dice < 0.90 | density \\|rel\\| > 1 % | > 5 % | > 10 % |
+|---|---|---|---|---|---|---|
+| brightness (8 conditions) | **1.000000** | 0.6223 | 1.1 % | 7.1 % | 1.4 % | 0.5 % |
+| uniform black border | 0.9890 | 0.5771 | 7.5 % | 43.0 % | 15.2 % | 5.4 % |
+| asymmetric black border | 0.9845 | 0.5771 | 11.1 % | 46.1 % | 19.8 % | 7.9 % |
+| thicker left/right | 0.9848 | 0.5771 | 11.1 % | 46.1 % | 19.6 % | 7.4 % |
+| thicker top/bottom | 0.9838 | 0.5771 | 11.5 % | 46.1 % | 20.5 % | 7.8 % |
+| one-sided black | 0.9898 | 0.5767 | 7.1 % | 42.7 % | 14.5 % | 4.6 % |
+| irregular black frame | 0.9829 | 0.5771 | 12.5 % | 47.6 % | 21.4 % | 8.8 % |
+| near-black border (level 5) | 0.9912 | 0.7553 | 5.9 % | 40.0 % | 12.9 % | 3.4 % |
+| dark-grey border (level 40) | 0.9872 | **0.3179** | 3.7 % | 52.9 % | 20.0 % | **12.6 %** |
+| overwrite black (content-altering) | 0.9666 | 0.7547 | 4.9 % | 60.9 % | 29.1 % | 4.3 % |
+
+```
+FOV_SAMPLE_N                        : 328   (325 baseline-valid)
+BRIGHTNESS_MEDIAN_FOV_DICE          : 1.000000   BRIGHTNESS_MIN_FOV_DICE : 0.622341
+BORDER_MEDIAN_FOV_DICE              : 0.984718   BORDER_MIN_FOV_DICE     : 0.317889
+BRIGHTNESS median/p95/max |rel dens|: 0.00000 / 0.001742 / 0.072794
+BORDER     median/p95/max |rel dens|: -0.001184 / 0.051578 / 2.187549
+FOV_FAILURES_BASELINE               : 3 / 328
+FOV_FAILURES_PERTURBED              : 37 / 9840 condition pairs (0.38 %)
+FOV_ROBUSTNESS                      : FAIL
+VESSEL_DENSITY_FOV_FINAL_PRIMARY    : REQUIRES_REVIEW
+FINAL_PRIMARY_REQUIRES_REVIEW       : YES
+```
+
+**Brightness is scale-invariant, exactly, until pixels clip.** For the six multiplicative conditions
+`0.25, 0.50, 0.70, 0.85` and the well-behaved part of `1.15 … 1.80`, Otsu tracks the scaling exactly:
+`thr_perturbed / (thr_baseline · c) = 1.0000`. Multiplicative darkening therefore leaves the FOV
+**bit-identical** — median Dice `1.000000`, and at ×0.25 and ×0.50 the minimum is also `1.000000`.
+The tail appears only once the upper range compresses: saturated-pixel fraction rises from 0.4 % at
+×1.15 to 10.5 % at ×1.80, the threshold ratio slips to `0.9901`, and the images whose baseline FOV is
+already marginal break (`min Dice 0.6223` at ×1.80; 13–22 % of images move >1 % at ×1.30–×1.80).
+Median density change is exactly `0.00000` at every brightness condition.
+
+**Borders fail through the threshold, not through component selection.** The quantity that decides
+every border outcome is the Otsu threshold shift. Adding a large black region to the histogram pulls
+the threshold down by 20–55 % (`thrRatio 0.41–0.56`: 93.07 → 39.35, 51.02 → 28.72, 73.69 → 66.11);
+retinal background lying between the old and new threshold then flips into the bright class and the
+FOV grows — up to 2.5× the baseline area — so `vessel_density_fov` falls because the added area is
+peripheral low-density retina (0.1464 → 0.0801, −45 %). A dark-grey border above the image's own
+threshold does the opposite: at level 40 with baseline threshold 35.98 the border joins the bright
+class, Otsu **rises** to 74.37 (`ratio 2.07`), the FOV collapses to 12 % coverage, and the detection
+hard-fails. **`fov_frac_inside_pad` is `0.000` in every inspected case: the border is never itself
+selected as the FOV, so component selection is not the mechanism.** The deciding factor is how the
+border intensity sits relative to each image's own green-level distribution, which is why dark
+low-contrast images (baseline threshold 40–50, small baseline FOV) are hit hardest and bright
+high-contrast images (threshold 90–107) barely move.
+
+Consequences, applied literally:
+
+* the failure is **border-driven, not brightness-driven**; brightness alone would classify as ROBUST
+  at the predeclared cut, borders do not;
+* the predeclared class definitions were **not** changed after seeing these numbers;
+* `vessel_density_fov` is **not** demoted and `retinal_fov` is **not** redesigned inside this task —
+  `FINAL_PRIMARY_REQUIRES_REVIEW = YES` is declared and disease-model training stops here, per
+  section L;
+* the risk is conditional on the acquisition path: project images carry no synthetic border, so the
+  border result bounds what an export/letterbox step would do, while the brightness result applies
+  to ordinary exposure variation.
+
+Private QC montages for the strongest brightness failures, the strongest border failures, a median
+case per geometry and stable controls are written by `scripts/task5b_h_mechanism.py` to
+`_private_audit/task5b_h_qc_*.png`; the mechanism table is `_private_audit/task5b_h_mechanism.csv`.
+No disease label is read at any point in this closure.
+
 ---
 
 ## I. Area, length and absolute counts — scale dependence
@@ -955,6 +1052,14 @@ Neither was introduced by this task and neither may be changed here. Both must b
 explicitly — by a new segmentation generation and a pre-specified missingness policy — before any
 corrected classifier is fitted.
 
+3. **`vessel_density_fov`, a `FINAL_PRIMARY` feature, is border-sensitive (Task 5B-H).** It is
+   exactly invariant to multiplicative brightness change while no pixel clips, but a synthetic black
+   border moves the Otsu threshold by 20–55 %, grows the detected FOV up to 2.5×, and changes the
+   density by more than 1 % in ~43–61 % of (image, border) pairs and by more than 10 % in up to
+   12.6 %. `FINAL_PRIMARY_REQUIRES_REVIEW = YES`; the feature was **not** demoted and the FOV rule
+   was **not** redesigned. This constrains any model whose inputs pass through an export, letterbox
+   or border-adding step, and must be resolved before disease-model training.
+
 ---
 
 ## Y. Success gate
@@ -977,3 +1082,46 @@ corrected classifier is fitted.
 ```
 TASK5B_STATUS = COMPLETE
 ```
+
+Task 5B-H closure, added afterwards and separately gated:
+
+| # | requirement | status |
+|---|---|---|
+| 1 | existing FOV implementation frozen before testing | ✓ `retinal_fov`, sha `6aea0d68…` |
+| 2 | deterministic project sample documented | ✓ 328 images, `N ≥ 300` |
+| 3 | brightness extremes tested | ✓ 8 conditions, ×0.25–×1.80 |
+| 4 | multiple black-border styles tested | ✓ 22 conditions, 10 styles |
+| 5 | FOV mask stability quantified | ✓ Dice, area, centroid, components, validity |
+| 6 | `vessel_density_fov` consequence quantified | ✓ median/p95/max and 1/2/5/10 % fractions |
+| 7 | source and geometry subgroup results reported | ✓ |
+| 8 | strongest failure cases inspected | ✓ mechanism table + QC montages |
+| 9 | no threshold tuned post hoc | ✓ predeclared classes unchanged |
+| 10 | consequence for FINAL_PRIMARY stated | ✓ `REQUIRES_REVIEW = YES` |
+| 11 | no disease classifier trained | ✓ |
+
+```
+FOV_STRESS_TEST_EXECUTED          : YES
+FOV_SAMPLE_N                      : 328   (325 baseline-valid)
+BRIGHTNESS_CONDITIONS_N           : 8
+BORDER_CONDITIONS_N               : 22
+BASELINE_FOV_VALID_N              : 325
+BRIGHTNESS_MEDIAN_FOV_DICE        : 1.000000
+BRIGHTNESS_MIN_FOV_DICE           : 0.622341
+BORDER_MEDIAN_FOV_DICE            : 0.984718
+BORDER_MIN_FOV_DICE               : 0.317889
+BRIGHTNESS_MEDIAN_DENSITY_REL_DELTA : 0.00000
+BRIGHTNESS_P95_DENSITY_REL_DELTA    : 0.001742
+BRIGHTNESS_MAX_DENSITY_REL_DELTA    : 0.072794
+BORDER_MEDIAN_DENSITY_REL_DELTA     : -0.001184
+BORDER_P95_DENSITY_REL_DELTA        : 0.051578
+BORDER_MAX_DENSITY_REL_DELTA        : 2.187549
+FOV_FAILURES_BASELINE             : 3
+FOV_FAILURES_PERTURBED            : 37
+FOV_ROBUSTNESS                    : FAIL
+VESSEL_DENSITY_FOV_FINAL_PRIMARY  : REQUIRES_REVIEW
+FINAL_PRIMARY_REQUIRES_REVIEW     : YES
+TASK5B_H_CLOSURE                  : PASS
+```
+
+`TASK5B_H_CLOSURE = PASS` means the closure task was executed against all eleven of its own
+requirements. It does **not** mean the FOV passed: `FOV_ROBUSTNESS = FAIL` is the finding.
