@@ -792,7 +792,114 @@ Per the stop rule nothing was tuned, no V4 was written, the 8,870-row table was 
 no classifier was trained. The exact residual mechanism is returned: the two extreme asymmetric
 padding widths, and the content-altering overwrite family that changes the retina itself.
 
+### TASK 5B-H5 — adjudication of the H4 residual (analysis only)
+
+No new candidate, no V3 change, no re-run of the 450 × 42 battery, no table regeneration, no
+classifier. This task only re-partitions the **existing** H4 rows and probes the residual cases.
+
+**A/B — semantic class from the transformation definition, then verified by pixel mapping.** 42
+conditions: **40 CONTENT_PRESERVING**, **2 CONTENT_ALTERING**. Verified on 12 images × 34 border
+conditions = 408 checks by recovering the mapped content region and comparing arrays:
+
+* all **32 padding conditions recover every original pixel exactly** — `modified_original_px = 0`,
+  `lost_original_px = 0`;
+* only `overwrite_all_w2` and `overwrite_lr_w2` modify original pixels (39,100 and 17,664 pixels of
+  a 512-frame) — CONTENT_ALTERING, and their numbers are an occlusion test, **not** an invariance test;
+* the 8 brightness conditions are CONTENT_PRESERVING by definition (global photometric change).
+
+**E — the two extreme pads are content-preserving.** `irregular_frame_w3` and `tb_thick_w3` recover
+every original pixel exactly (0 modified, 0 lost, canvas grows by 230×230 and 276×92). Their failures
+are therefore **legitimate FOV invariance failures and are not dismissed**. They are not edge cases
+either: `density >5 %` in 47.3 % and 46.7 % of their rows.
+
+**C — V3 metrics split by class.**
+
+| | CONTENT_PRESERVING | CONTENT_ALTERING (occlusion test) |
+|---|---|---|
+| conditions / pairs | 40 / 18,000 | 2 / 900 |
+| median FOV Dice | **0.999957** | 0.953727 |
+| p01 / min FOV Dice | 0.833822 / 0.528559 | 0.385834 / 0.162949 |
+| Dice < 0.99 / < 0.90 | 8.51 % / 2.24 % | 80.8 % / 26.1 % |
+| FOV valid → invalid | **6** | 14 |
+| `vessel_density_fov` >1 % / >5 % / >10 % | 7.84 % / 3.03 % / 1.48 % | 73.1 % / 43.8 % / 20.6 % |
+| `skel_density_fov` >1 % / >5 % / >10 % | 10.29 % / 5.82 % / 4.13 % | 81.3 % / 74.4 % / 46.3 % |
+| `fractal_d0/d1/d2` median rel | **0.00000** each | −0.0025 / −0.0031 / −0.0030 |
+| finite → NaN | **0** | 12 |
+
+**D — residual true failures.** Union of (Dice < 0.95) ∪ (valid→invalid) ∪ (density |rel| > 5 %) over
+content-preserving pairs: **1,055 of 18,000 = 5.86 %**. Trigger decomposition: **0 rows fail on Dice
+alone** — every Dice < 0.95 row also has density > 5 %; 6 rows are validity failures; 293 fail on
+density only. By condition: `irregular_frame_w3` 213 and `tb_thick_w3` 210 dominate, then brightness
+×1.80 128, `asymmetric_black_w3` 119, `lr_thick_w3` 86, ×1.50 79, ×1.30 40, ×1.15 22, ×0.25 17, and
+~13 each for the six grey conditions. By source `plus` 815 / farfum_rop 205 / farabi 35; by geometry
+1240×1240 470, 640×480 326, 1600×1200 205, 1280×960 35, 1440×1080 19.
+
+**The residual mechanism is a frame-area-dependent constant, not an unfixable border effect.**
+Mechanism probe on 90 residual rows:
+
+```
+rows where V3 trimmed ORIGINAL content beyond the added padding : 13 of 90
+rows where the detected content box equals the added padding exactly : 77 of 90
+rows where min_size = max(64, 0.001*h*w) CHANGED with the canvas : 60 of 90
+     median ratio 1.22, max 2.55        Otsu shift median -28.6 grey levels, max |shift| 59.5
+```
+
+Two frame-area dependencies survive in V3:
+
+1. **`MIN_CONTENT_FRAC = 0.50` falls back to the full-frame estimate.** When the padding is large
+   enough that the retained content is less than half the padded frame, `content_bounds` returns
+   `trimmed = False`, the border exclusion is silently skipped, and Otsu runs on the padded frame
+   again — reintroducing the exact border sensitivity V2/V3 were built to remove. That is what the
+   −28.6 to −59.5 grey-level threshold shifts are: `lr_thick_w3`, `tb_thick_w3`, `irregular_frame_w3`
+   and `asymmetric_black_w3` on 512-frames pad 244 px on one axis, leaving 47 % content.
+2. **`min_size = max(64, int(0.001*h*w))` uses the file frame area.** Padding enlarges `h*w`, so the
+   small-object and small-hole thresholds grow with the canvas (median 1.22×, max 2.55×), removing
+   structures that survive at baseline.
+
+The brightness tail is a separate, honest third mechanism: global photometric change is
+content-preserving but clipping is not information-preserving — `sat_hi` reaches 10.5 % at ×1.80 and
+the threshold moves `+4.0` there (`min_size` unchanged at 1.00). That is an exposure-range statement,
+not a border defect.
+
+**F — fractal status confirmed from the existing H4 control** (no re-run): D0/D1/D2 all
+`V1 3.13 % / 3.00 % / 3.18 % → V3 0.00000` median |rel|, max 0.90 % / 2.00 % / 2.59 % — resolved.
+
+```
+CONTENT_PRESERVING_CONDITIONS_N          : 40
+CONTENT_ALTERING_CONDITIONS_N            : 2
+CONTENT_PRESERVING_PAIRS_N               : 18000
+V3_CONTENT_PRESERVING_MEDIAN_DICE        : 0.999957
+V3_CONTENT_PRESERVING_P01_DICE           : 0.833822
+V3_CONTENT_PRESERVING_MIN_DICE           : 0.528559
+V3_CONTENT_PRESERVING_VALID_TO_INVALID_N : 6
+VESSEL_DENSITY_CONTENT_PRESERVING_GT1PCT : 0.0784
+VESSEL_DENSITY_CONTENT_PRESERVING_GT5PCT : 0.0303
+SKEL_DENSITY_CONTENT_PRESERVING_GT1PCT   : 0.1029
+SKEL_DENSITY_CONTENT_PRESERVING_GT5PCT   : 0.0582
+TRUE_RESIDUAL_FOV_FAILURES_N             : 1055   (5.86 % of content-preserving pairs)
+TRUE_RESIDUAL_FAILURE_MECHANISM          : frame-area-dependent constants — MIN_CONTENT_FRAC 0.50
+                                           silently falls back to full-frame Otsu when the pad
+                                           leaves <50 % content, and min_size = 0.001*h*w grows
+                                           with the padded canvas; plus photometric clipping at
+                                           x1.50-x1.80
+FRACTAL_D0_CANVAS_PROBLEM_RESOLVED       : YES
+FRACTAL_D1_CANVAS_PROBLEM_RESOLVED       : YES
+FRACTAL_D2_CANVAS_PROBLEM_RESOLVED       : YES
+V3_MEASUREMENT_PATH_STATUS               : REQUIRES_TARGETED_FIX
+FULL_8870_REGENERATION_ALLOWED           : NO
+TASK5B_H5_STATUS                         : COMPLETE
+```
+
+`TASK5B_H4 = FAIL` stands as recorded. H5 answers only the different question — and the answer is
+that the residual is **not** rare and **is** systematic: the failure appears exactly when padding is
+large enough to trip one of two frame-area-dependent constants, and it disappears when they are held
+to the content (3.98 % / 4.77 % density error and p01 0.9027 on the subset that avoids them). One
+targeted fix is therefore identified and predeclarable: **make both constants content-relative
+(forbid the MIN_CONTENT_FRAC fallback from re-admitting the border, and scale `min_size` by the
+content area, not the file canvas)**. That fix is NOT implemented here.
+
 ---
+
 
 ## I. Area, length and absolute counts — scale dependence
 
