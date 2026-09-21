@@ -462,6 +462,101 @@ balance statistics cannot be computed without changing the module, which this ta
 **A/V remains `EXPLORATORY_ONLY`.** No expert A/V reference labels exist, no acceptance threshold
 was invented, and nothing here validates biological correctness of the labels.
 
+### Task 5B-N2 — production-faithful instrumentation: STOPPED AT THE EQUIVALENCE GATE
+
+The first closure attempt was invalidated by a **scaling bug in the replica**, not by any property
+of the heuristic: the replica passed the 0–255 float image through `np.clip(rgb, 0, 1)`, which
+destroyed the picture, drove `gc` to zero everywhere, made every branch value tie, and produced
+`a_frac = 1.0` instead of ≈0.5. The earlier speculation in this document that the production rule
+is "tie-dominated" was a consequence of that bug and is **withdrawn**.
+
+A production-faithful second attempt was then built: the inline A/V block was moved, unedited,
+into a module-level helper `assign_av_branches(gc, lab, nlab, dist)` that returns the branch
+table, and `measure()` consumes the same helper, so exactly one implementation exists and no
+replica supplies any number.
+
+```
+pre-refactor  sha256 : 3c1c10773ed28a187df373412e9de62309f30dd2896ab602b36bea6e44b29e66
+post-refactor sha256 : 171fe7ab1bd4edc9942d60b80043d45ee39ca79ec301d970182bdad3154b490b
+```
+
+**The instrumentation itself is faithful.** On all 8,870 canonical images the artery fraction
+reconstructed directly from the helper's own `is_a` labels equals `measure()`'s `a_frac` exactly:
+
+```
+DIAGNOSTIC_CONTROL_MAX_DELTA = 0.000e+00
+```
+
+**The predeclared equivalence gate nevertheless failed**, so the battery was not run:
+
+| column | NaN pattern | max abs delta | verdict |
+|---|---|---|---|
+| `branch_px_work` | same | 0.000e+00 | IDENTICAL |
+| `n_branches` | same | 0.000e+00 | IDENTICAL |
+| `a_frac` | same | 1.110e-16 | differs |
+| `a_width_p90_px` | same | 1.776e-15 | differs |
+| `v_width_p90_px` | same | 3.553e-15 | differs |
+| `av_width_ratio_p90` | same | 2.220e-16 | differs |
+
+```
+AV_REFACTOR_CANONICAL_N                 : 8870
+AV_FEATURE_COLUMNS_CHECKED              : 6
+AV_ROWS_EXACT_OR_NUMERICALLY_EQUIVALENT : 0
+AV_ROWS_DIFFERENT                       : 4
+AV_MAX_ABS_DELTA                        : 3.553e-15
+AV_FULL_BEHAVIOR_EQUIVALENCE            : FAIL  -> STOP
+```
+
+The deltas are 1–16 ULP of float64, and Task 5B-N2 section C does permit "machine-level numerical
+equivalence with explicit maximum difference". **That allowance was not invoked**, because the
+predeclared criterion for this run was exact equality and the stopping rule was keyed on
+`AV_ROWS_DIFFERENT != 0`. Relaxing the criterion after seeing the number would be post-hoc
+threshold movement, which the protocol forbids. The run therefore stopped, the perturbation
+battery was **not** executed, and the refactor was **not** committed.
+
+Consequences, applied literally:
+
+* production code is unchanged; the module on the analysis host was restored to the frozen sha
+  `3c1c10773ed28a187df373412e9de62309f30dd2896ab602b36bea6e44b29e66` and verified;
+* `clinical_measurement_v1.py` is **not** in the refactored state anywhere;
+* no flip rate, no feature-stability figure and no tie statistic from either attempt is reported;
+* `TASK5B_N2_CLOSURE = INCOMPLETE`.
+
+```
+AV_STRESS_TEST_EXECUTED:              YES (two attempts; neither produced usable flip rates)
+AV_PRODUCTION_INSTRUMENTATION:        PASS  (helper control delta = 0 on 8,870 images)
+AV_FULL_BEHAVIOR_EQUIVALENCE:         FAIL  (predeclared exact criterion; deltas 1e-16..3.6e-15)
+AV_SAMPLE_N:                          360   (drawn, battery not executed)
+BASELINE_BRANCH_N:                    NOT_MEASURED
+DIAGNOSTIC_CONTROL_MAX_DELTA:         0.000e+00
+BRIGHTNESS_MAX_FLIP_RATE:             NOT_REPORTED
+CONTRAST_MAX_FLIP_RATE:               NOT_REPORTED
+GAMMA_MAX_FLIP_RATE:                  NOT_REPORTED
+WHITE_BALANCE_MAX_FLIP_RATE:          NOT_REPORTED
+ILLUMINATION_GRADIENT_MAX_FLIP_RATE:  NOT_REPORTED
+OVERALL_MAX_BRANCH_FLIP_RATE:         NOT_REPORTED
+TIE_AT_THRESHOLD_MEDIAN_FRACTION:     NOT_REPORTED
+AV_BALANCE_BRANCH_MEDIAN:             NOT_AVAILABLE
+AV_BALANCE_LENGTH_MEDIAN:             0.5402   (frozen table, n = 8865, valid)
+AV_BALANCE_PIXEL_MEDIAN:              NOT_AVAILABLE
+AV_STATUS:                            EXPLORATORY_ONLY
+EXPERT_AV_VALIDATION_AVAILABLE:       NO
+DOCUMENTATION_OVERCLAIM_CORRECTED:    YES
+FAILED_REPLICA_RESULTS_USED:          NO
+TASK5B_N2_CLOSURE:                    INCOMPLETE
+```
+
+**What would close it.** The distance to a passing gate is 4 columns at ≤3.6e-15. The remaining
+work is to identify why those four aggregates differ by 1–16 ULP when the branch table, the
+threshold and the `is_a` labels are provably identical (the control is exactly 0). The likely
+cause is aggregation order in `np.percentile`/`np.sum` between the two code paths, which is a
+diagnostic question, not a scientific one. Per the task's own section C, a future run may
+predeclare `max_abs_delta <= 1e-12` with the value recorded, which would pass; **that must be
+predeclared before the run, not after seeing this number.**
+
+A/V remains `EXPLORATORY_ONLY`. No expert artery/vein labels exist, no acceptance threshold was
+invented, and nothing here validates biological identity of the labels.
+
 Original section text retained below for provenance.
 
 | feature | admission |
