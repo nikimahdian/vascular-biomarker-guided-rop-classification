@@ -655,6 +655,143 @@ component selection against a selectable padding, which is a different change fr
 here, and it must be predeclared and re-evaluated on a new locked sample rather than tuned on this
 one.
 
+### TASK 5B-H4 — `CLINICAL_MEASUREMENT_V3_CANDIDATE`: padding-aware component selection
+
+V1 and V2 are untouched and reproducible (shas in the H3 block above). V3 inherits B1's threshold and
+B2's fractal domain with **no constant changed** (`CONST_TOL 2.0`, `MIN_CONTENT_FRAC 0.50`,
+`DOMAIN_MARGIN 0.10`, `DOMAIN_ALIGN 8`), and changes exactly one thing — the order of operations:
+
+```
+V2:  threshold -> binarise -> small objects -> small holes -> closing -> label -> largest -> THEN
+     zero the detected external band out of the mask
+V3:  threshold -> binarise -> raw component count -> ZERO THE DETECTED EXTERNAL BAND -> small
+     objects -> small holes -> closing -> label -> largest
+```
+
+The external band is the frame minus the content box, i.e. exactly the four detected constant edge
+bands. Removing it *before* morphology and labelling means a threshold-positive padding ring can
+never be a candidate component and can never inflate the `frag` denominator. Fallback: an untrimmed
+frame has no external band and V3 selects exactly as V2/V1. Failure reasons and thresholds are V1's,
+unchanged; no new constant exists anywhere.
+
+Locked sample: **450 images, disjoint from the 328 development and the 450 H3 images**, stratified
+over source × geometry × split. Conditions: the same 8 brightness + 22 border + 6 H3 novel, plus a
+**6-condition challenge set** whose grey levels are placed at −30/−10/+10/+30 relative to each
+image's own background median, one asymmetric and one at 0.18·min width. V3 is evaluated on all 42
+conditions; V1 and V2 on a predeclared 8-condition mechanism subset on the same new sample, with
+their full-set numbers taken from the H3 locked run. `overwrite_*` was predeclared CONTENT_ALTERING
+(it overwrites retinal pixels) and is reported separately. Gate G1–G11 frozen in
+`task5b_h4_manifest.json` before the run. 18,900 rows, 0 errors.
+
+**The known mechanism is reproduced and then resolved.**
+
+| mechanism subset (n = 3,600; grey-40/90, challenge greys) | V1 | V2 | **V3** |
+|---|---|---|---|
+| median FOV Dice | 0.989966 | 0.999618 | **0.999940** |
+| 1st-percentile Dice | 0.000000 | 0.000000 | **0.943752** |
+| minimum Dice | 0.000000 | 0.000000 | **0.756814** |
+| fraction Dice < 0.90 | 8.5 % | 3.31 % | **0.67 %** |
+| FOV valid → invalid | **3600** | **3600** | **2** |
+
+V1 and V2 invalidate **every** grey-border row in the subset. V3 invalidates two. Of V2's 2,731
+component-destroyed rows, V3 returns a valid FOV for **2,729** — with median Dice 0.999937 against
+the baseline. Across all 42 conditions the diagnostic is unambiguous:
+
+```
+V3 rows with any FOV pixel inside the detected padding : 0 of 15,300
+V3 grey rows (n = 4,050): median Dice 0.999940, invalid 2   (0.05 %)
+V3 all-border: median Dice 0.999931, p01 0.777813, min 0.162949, invalid 20
+V3 by source   0.999858 - 0.999958      V3 by geometry 0.999765 - 1.000000
+```
+
+**Five FINAL_PRIMARY features under border (n = 15,300).**
+
+| feature | median rel | p95 rel | max rel | >1 % | >2 % | >5 % | >10 % |
+|---|---|---|---|---|---|---|---|
+| `vessel_density_fov` | +0.00007 | +0.00508 | +4.1445 | 10.8 % | 8.9 % | 5.3 % | 2.6 % |
+| `skel_density_fov` | +0.00008 | +0.00607 | +10.274 | 12.3 % | 11.4 % | 9.3 % | 6.5 % |
+| `fractal_d0` | **0.00000** | +0.00813 | +0.4849 | 7.2 % | 3.6 % | 0.93 % | 0.12 % |
+| `fractal_d1` | **0.00000** | +0.00837 | +0.4482 | 8.3 % | 4.7 % | 1.08 % | 0.25 % |
+| `fractal_d2` | **0.00000** | +0.00929 | +0.4590 | 9.0 % | 4.8 % | 1.10 % | 0.27 % |
+
+Zero-padding control (identical support, larger canvases, no FOV detection):
+
+```
+fractal_d0  V1 median|rel| 0.03133  ->  V3 0.00000  (max 0.00897)
+fractal_d1  V1 median|rel| 0.02998  ->  V3 0.00000  (max 0.02004)
+fractal_d2  V1 median|rel| 0.03180  ->  V3 0.00000  (max 0.02590)
+```
+
+Native preservation (450 unperturbed images): FOV Dice V3 vs V1 median `1.000000`, p05 0.984481;
+validity unchanged in both directions (0 lost, 0 gained); both density features unchanged at the
+median (`0.00000`); fractals move `−0.0349 / −0.0356 / −0.0367` at the median because the analysis
+domain changed — a definition change of the same size as the artefact it removes. Without expert FOV
+annotation this is reported, not adjudicated.
+
+**Gate: 7 of 13 pass → `FOV_BORDER_ROBUSTNESS_V3 = FAIL`.**
+
+```
+G1_median_dice             PASS  0.999931
+G2_p01_dice                FAIL  0.777813 < 0.95
+G3_plausible_condition     FAIL  irregular_frame_w3 0.9855, tb_thick_w3 0.9862 < 0.99
+G4_valid_to_invalid        FAIL  20 > 5
+G5_grey_component_failure  PASS  2 of 4050 = 0.05 %
+G6_vessel_density          FAIL  10.8 % > 5 %
+G7_skel_density            FAIL  12.3 % > 5 %
+G8_canvas D0/D1/D2         PASS  0.00000 median
+G9_no_new_nan              PASS  12 finite->NaN of 15300 (bound 76.5)
+G10_subgroups              FAIL
+G11_native_validity        PASS  0 of 450
+```
+
+**Residual mechanism, decomposed — two specific families, nothing else.**
+
+| subset | n | median Dice | p01 Dice | min | invalid | >1 % vessel | >1 % skel |
+|---|---|---|---|---|---|---|---|
+| all border | 15,300 | 0.999931 | 0.7778 | 0.1629 | 20 | 10.8 % | 12.3 % |
+| plausible padding only | 14,400 | 0.999944 | 0.8353 | 0.5286 | 6 | 6.9 % | 7.9 % |
+| excluding the two w3 asymmetric pads | 13,500 | **0.999952** | **0.9027** | 0.5286 | **5** | **3.98 %** | **4.77 %** |
+| `irregular_frame_w3` + `tb_thick_w3` | 900 | 0.985918 | 0.6455 | 0.5286 | 1 | 50.4 % | 55.3 % |
+| content-altering `overwrite_*` | 900 | 0.953727 | 0.3858 | 0.1629 | **14** | 73.1 % | 81.3 % |
+
+* **14 of the 20 invalid rows and 727 of the 1,742 rows below Dice 0.99 are the content-altering
+  `overwrite_*` conditions**, which paint black bars over retinal pixels. The retina genuinely
+  changes there, so a changed FOV is the correct answer, not a defect. They were predeclared out of
+  the plausible-border floor and are the single largest contributor to the failing density fractions.
+* **The remaining density failure comes from two conditions**, `irregular_frame_w3` and
+  `tb_thick_w3`, whose largest band is `4·w3 = 0.48·min` — a bottom band of nearly half the image
+  height. On images whose retina reaches the frame edge the content box then clips retinal content,
+  and the FOV changes by ~1.4 % at the median with a tail to Dice 0.53.
+* **With those two families set aside the density endpoints are 3.98 % and 4.77 %**, i.e. inside the
+  predeclared 5 % bar, and p01 Dice is 0.9027. That is reported for a separate decision, **not** used
+  to change the gate: the gate was frozen before the run and V3 is recorded as failing it.
+
+```
+TASK5B_H4_CANDIDATE                        : CLINICAL_MEASUREMENT_V3_CANDIDATE
+LOCKED_SAMPLE_N                            : 450
+LOCKED_SAMPLE_DISJOINT                     : YES
+KNOWN_BORDER_COMPONENT_FAILURE_REPRODUCED  : YES   (V1 and V2 invalidate 3600/3600 mechanism rows)
+V3_PREDECLARED                             : YES
+GREY_BORDER_COMPONENT_FAILURE_RESOLVED     : YES   (2 invalid of 4050; 2729 of V2's 2731 recovered)
+FOV_BORDER_ROBUSTNESS_V3                   : FAIL  (7 of 13)
+VESSEL_DENSITY_BORDER_PROBLEM_RESOLVED     : NO    (10.8 % > 5 %; 3.98 % if the two extreme pads
+                                                    and the content-altering family are excluded)
+SKEL_DENSITY_BORDER_PROBLEM_RESOLVED       : NO    (12.3 % > 5 %; 4.77 % on the same exclusion)
+FRACTAL_D0_ZERO_PADDING_RESOLVED           : YES
+FRACTAL_D1_ZERO_PADDING_RESOLVED           : YES
+FRACTAL_D2_ZERO_PADDING_RESOLVED           : YES
+NEW_NAN_FAILURES                           : NO    (12 isolated rows, bound was 76.5)
+NATIVE_DRIFT_REVIEWED                      : YES
+CLINICAL_MEASUREMENT_V3_CANDIDATE_STATUS   : NOT_SUPPORTED
+FULL_8870_REGENERATION_ALLOWED             : NO
+DISEASE_MODEL_TRAINING_ALLOWED             : NO
+TASK5B_H4_STATUS                           : COMPLETE
+```
+
+Per the stop rule nothing was tuned, no V4 was written, the 8,870-row table was not regenerated and
+no classifier was trained. The exact residual mechanism is returned: the two extreme asymmetric
+padding widths, and the content-altering overwrite family that changes the retina itself.
+
 ---
 
 ## I. Area, length and absolute counts — scale dependence

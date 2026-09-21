@@ -112,28 +112,67 @@ gives `coverage_below_15pct` 18 and `fragmented_bright_region` 10, median covera
 ## 4. Task 5B-H4 — V3 candidate, padding-aware component selection
 
 Script: `scripts/task5b_h4_eval.py`; candidate `src/biomarker/clinical_measurement_v3_candidate.py`.
-**RUNNING.** Locked sample 450 images, disjoint from the 328 development and the 450 H3 images,
-stratified over source × geometry × split; V3 evaluated on all 42 conditions, V1 and V2 on a
-predeclared 8-condition mechanism subset; gate G1–G11 frozen in `task5b_h4_manifest.json`.
+**FINISHED.** Locked sample **450 images**, disjoint from the 328 development and the 450 H3 images,
+stratified over source × geometry × split; V3 on all 42 conditions, V1 and V2 on a predeclared
+8-condition mechanism subset; gate G1–G11 frozen in `task5b_h4_manifest.json` before the run;
+18,900 rows, 0 errors.
 
 Single change, predeclared: the detected external constant band is removed from the binarisation
 **before** morphology and **before** labelling, so a threshold-positive padding ring can never be a
-candidate component and can never inflate `frag`. Everything else is V1/V2 unchanged, including
-`CONST_TOL 2.0`, `MIN_CONTENT_FRAC 0.50`, `DOMAIN_MARGIN 0.10`, `DOMAIN_ALIGN 8`, `min_size`,
-`disk(3)` and the failure criteria `0.15 / 0.985 / 0.90`.
+candidate component and can never inflate `frag`. `CONST_TOL 2.0`, `MIN_CONTENT_FRAC 0.50`,
+`DOMAIN_MARGIN 0.10`, `DOMAIN_ALIGN 8`, `min_size`, `disk(3)` and the failure criteria
+`0.15 / 0.985 / 0.90` are all unchanged.
 
-Single-image benchmark proving the mechanism is addressed (one `155…` plus image, 384×512):
+**The known mechanism is resolved.** Mechanism subset (grey-40/90 + greys placed ±10/±30 relative to
+each image's own background, n = 3,600):
 
-| condition | V1 | V2 | V3 |
+| endpoint | V1 | V2 | V3 |
 |---|---|---|---|
-| grey-90 border, validity | valid | **invalid** (`fragmented_bright_region`) | **valid** |
-| grey-90 border, `vessel_density_fov` | 0.05974 | 0.07643 | 0.07648 |
-| grey-90 border, Dice vs V1 | 1.0000 | 0.8774 | 0.8771 |
+| median FOV Dice | 0.989966 | 0.999618 | **0.999940** |
+| p01 FOV Dice | 0.000000 | 0.000000 | **0.943752** |
+| minimum FOV Dice | 0.000000 | 0.000000 | **0.756814** |
+| Dice < 0.90 | 8.5 % | 3.31 % | **0.67 %** |
+| FOV valid → invalid | **3600** | **3600** | **2** |
+| V3 rows with any FOV pixel inside the detected padding | — | — | **0 of 15,300** |
+| V2's destroyed rows recovered by V3 | — | — | **2,729 of 2,731** |
 
-V3 returns the same value V2 computes, without destroying the selected component.
+All 42 conditions: median Dice **0.999931**, p01 0.777813, min 0.162949, invalid 20, centroid median
+0.000015, relative area median −0.000078. By source 0.999858–0.999958, by geometry 0.999765–1.000000.
+Grey conditions (n = 4,050): median 0.999940, **invalid 2 (0.05 %)**.
 
-Outputs when finished: `_private_audit/task5b_h4_summary.json`, `task5b_h4_rows.csv`,
-`task5b_h4_baseline.csv`, `task5b_h4_canvas_control.csv`, `task5b_h4_manifest.json`.
+Five FINAL_PRIMARY features under border (n = 15,300):
+
+| feature | median rel | p95 rel | max rel | >1 % | >5 % | >10 % |
+|---|---|---|---|---|---|---|
+| `vessel_density_fov` | +0.00007 | +0.00508 | +4.1445 | 10.8 % | 5.3 % | 2.6 % |
+| `skel_density_fov` | +0.00008 | +0.00607 | +10.274 | 12.3 % | 9.3 % | 6.5 % |
+| `fractal_d0` | **0.00000** | +0.00813 | +0.4849 | 7.2 % | 0.93 % | 0.12 % |
+| `fractal_d1` | **0.00000** | +0.00837 | +0.4482 | 8.3 % | 1.08 % | 0.25 % |
+| `fractal_d2` | **0.00000** | +0.00929 | +0.4590 | 9.0 % | 1.10 % | 0.27 % |
+
+Zero-padding control: V1 median |rel| 3.13 / 3.00 / 3.18 % → **V3 0.00000 / 0.00000 / 0.00000**
+(max 0.90 / 2.00 / 2.59 %). Native preservation: FOV Dice V3 vs V1 median `1.000000`, validity lost
+0 of 450, both density features `0.00000` at the median; fractal native drift
+−3.49 / −3.56 / −3.67 % median (definition change, reported not adjudicated).
+
+**Gate: 7 of 13 pass → `FOV_BORDER_ROBUSTNESS_V3 = FAIL`.** Passing: G1 median Dice, G5 grey
+component failure, G8 canvas D0/D1/D2, G9 NaN bound, G11 native validity. Failing: G2 p01 Dice
+(0.7778), G3 two condition medians (`irregular_frame_w3` 0.9855, `tb_thick_w3` 0.9862), G4
+valid→invalid (20 > 5), G6/G7 density >1 % (10.8 % / 12.3 %), G10 subgroups.
+
+Residual mechanism, decomposed — two families and nothing else:
+
+| subset | n | median Dice | p01 | min | invalid | >1 % vessel | >1 % skel |
+|---|---|---|---|---|---|---|---|
+| all border | 15,300 | 0.999931 | 0.7778 | 0.1629 | 20 | 10.8 % | 12.3 % |
+| plausible padding only | 14,400 | 0.999944 | 0.8353 | 0.5286 | 6 | 6.9 % | 7.9 % |
+| excluding the two w3 asymmetric pads | 13,500 | **0.999952** | **0.9027** | 0.5286 | **5** | **3.98 %** | **4.77 %** |
+| `irregular_frame_w3` + `tb_thick_w3` | 900 | 0.985918 | 0.6455 | 0.5286 | 1 | 50.4 % | 55.3 % |
+| content-altering `overwrite_*` | 900 | 0.953727 | 0.3858 | 0.1629 | **14** | 73.1 % | 81.3 % |
+
+Per the stop rule: no tuning, no V4, no regeneration, no training. Outputs:
+`_private_audit/task5b_h4_summary.json`, `task5b_h4_rows.csv`, `task5b_h4_baseline.csv`,
+`task5b_h4_canvas_control.csv`, `task5b_h4_manifest.json`.
 
 ---
 
