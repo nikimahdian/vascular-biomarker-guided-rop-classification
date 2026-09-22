@@ -139,6 +139,7 @@ def main() -> None:
     prov_cols = [c for c in meta.columns if c not in meas_keys]
     meas_cols = list(meas_keys)
     print(f"  provenance columns {len(prov_cols)}   measurement columns {len(meas_cols)}")
+    meta["geom"] = [GEOM.get(Image.open(p).size, "other") for p in meta.image_path]
 
     if not analyze_only:
         df = run_generation(meta, prov_cols, meas_cols)
@@ -194,7 +195,7 @@ def main() -> None:
               f"split {miss.split.value_counts().to_dict()}")
         mm = miss.merge(meta[["image_path", "mask_path"]], on="image_path", how="left",
                         suffixes=("", "_c"))
-        mm["geom"] = [GEOM.get(Image.open(p).size, "other") for p in mm.image_path_c]
+        mm["geom"] = [GEOM.get(Image.open(p).size, "other") for p in mm.image_path]
         print(f"  geometry {mm.geom.value_counts().to_dict()}")
         for r in miss.itertuples():
             print(f"    {str(r.image_path).split('/')[-1]:46s} {r.source:10s} {r.split:6s} "
@@ -238,8 +239,7 @@ def main() -> None:
     print("H. SOURCE / GEOMETRY / SPLIT DESCRIPTIVE QC")
     print("=" * 100)
     hq = complete.copy()
-    meta_g = meta[["image_path", "mask_path"]].copy()
-    meta_g["geom"] = [GEOM.get(Image.open(p).size, "other") for p in meta_g.image_path]
+    meta_g = meta[["image_path", "mask_path", "geom"]].copy()
     hq = hq.merge(meta_g[["image_path", "geom"]], on="image_path", how="left")
     for key in ("source", "split", "geom"):
         print(f"  by {key}:")
@@ -279,16 +279,20 @@ def main() -> None:
     print("=" * 100)
     print("J. DETERMINISM CHECK")
     print("=" * 100)
-    sub = pd.concat([g.head(25) for _, g in meta.groupby(["source", "geom", "split"])])
-    sub = sub.head(max(120, 100)).reset_index(drop=True)
-    sub = sub.merge(meta_g[["image_path", "geom"]], on="image_path", how="left", suffixes=("", "_g"))
+    sub = pd.concat([g.head(8) for _, g in meta.groupby(["source", "geom", "split"])])
+    sub = sub.reset_index(drop=True)
+    if len(sub) < 100:
+        sub = pd.concat([g.head(16) for _, g in meta.groupby(["source", "geom", "split"])]
+                        ).reset_index(drop=True)
+    sub = sub.merge(meta_g[["image_path", "geom"]], on="image_path", how="left",
+                    suffixes=("", "_g"))
     rep = []
     with get_context("fork").Pool(12) as pool:
         for pth, rec in pool.imap_unordered(worker, list(zip(sub.image_path, sub.mask_path))):
             rep.append({"image_path": pth, **{f: rec.get(f, np.nan) for f in FEATS},
                         "valid": bool(rec.get("fov_valid_v5")),
                         "reason": str(rec.get("fov_failure_reason_v5", "")),
-                        "cov": float(rec.get("fov_coverage_fraction", np.nan))})
+                        "cov_rep": float(rec.get("fov_coverage_fraction", np.nan))})
     RP = pd.DataFrame(rep)
     CMP = RP.merge(df[["image_path"] + FEATS + ["fov_valid_v5", "fov_failure_reason_v5",
                                                 "fov_coverage_fraction"]], on="image_path",
@@ -298,7 +302,8 @@ def main() -> None:
         d = (CMP[f + "_r"] - CMP[f + "_t"]).abs().max()
         md = max(md, float(d) if np.isfinite(d) else float("inf"))
     val_ok = bool((CMP.valid == CMP.fov_valid_v5).all())
-    cov_ok = bool(np.allclose(CMP.cov, CMP.fov_coverage_fraction, atol=1e-12, equal_nan=True))
+    cov_ok = bool(np.allclose(CMP["cov_rep"], CMP["fov_coverage_fraction"], atol=1e-12,
+                              equal_nan=True))
     print(f"  subset N {len(CMP)}  sources {sub.source.nunique()}  geoms {sub.geom.nunique()}  "
           f"splits {sub.split.nunique()}")
     print(f"  max |feature delta| {md:.3e}   (atol 1e-12)   features ok {md <= 1e-12}")
