@@ -898,6 +898,123 @@ targeted fix is therefore identified and predeclarable: **make both constants co
 (forbid the MIN_CONTENT_FRAC fallback from re-admitting the border, and scale `min_size` by the
 content area, not the file canvas)**. That fix is NOT implemented here.
 
+### TASK 5B-H6 — `CLINICAL_MEASUREMENT_V4_CANDIDATE`: content-relative FOV constants
+
+V1, V2 and V3 are untouched and reproducible (shas in the blocks above). V4 is V3 with **exactly two
+changes**, both named by H5:
+
+* **Change 1 — no canvas-fraction fallback.** `content_bounds_v4` has no fraction test. Otsu is
+  computed on the detected content rectangle whenever one exists; the only new failure is
+  `no_content_region`, for a frame whose content rectangle is empty. No new tuned threshold.
+* **Change 2 — content-relative morphology size.** `min_size = max(64, int(0.001·content_h·content_w))`.
+  The `0.001` rule and the `64` floor are unchanged; only the area is the content domain.
+
+Everything else is V3: `CONST_TOL 2.0`, the Otsu implementation, the external band removed before
+morphology and labelling, `remove_small_objects`/`holes`, `binary_closing(disk(3))`, largest-component
+selection, the validity rules, the fractal window, the D0/D1/D2 estimator, the density formulas and
+`SEG_CURRENT_V1`.
+
+**D1/D2 unit invariance — PASS.** The same retinal content embedded in pads of 0, 5, 20, 60, 140 and
+300 px, canvas growing 64×80 → 664×680:
+
+| | pad 0 | 5 | 20 | 60 | 140 | 300 |
+|---|---|---|---|---|---|---|
+| content pixels identical to base | yes | yes | yes | yes | yes | yes |
+| **V4** Otsu threshold | 40.3731 | 40.3731 | 40.3731 | 40.3731 | 40.3731 | 40.3731 |
+| **V4** `min_size` | 64 | 64 | 64 | 64 | 64 | 64 |
+| V3 `trimmed` flag | True | True | **False** | **False** | **False** | **False** |
+| V3 `min_size` | 64 | 64 | 64 | 64 | **123** | **451** |
+
+`UNIT_CONTENT_THRESHOLD_INVARIANCE = PASS`, `UNIT_CONTENT_MINSIZE_INVARIANCE = PASS`, and D2 shows the
+full-frame dimensions change while both quantities stay constant. V3 by contrast loses its border
+exclusion at pad ≥ 20 and its `min_size` grows 64 → 123 → 451.
+
+**E — development check on the known H5 cases** (10 images, 70 rows). V3 fell back to full-frame Otsu
+in **20 of 70** rows — 10/10 on each of `irregular_frame_w3` and `tb_thick_w3` — with threshold
+40.17/40.47 against V4's 48.97; and V3's `min_size` was canvas-scaled in **70 of 70** (239–455)
+against V4's 196. Both H5 mechanisms were exercised, and V4 removes both.
+
+**F/H — locked evaluation.** New sample of **150 images**, disjoint from the 328 + 450 + 450 previous
+samples, stratified over source × geometry × split; targeted condition set of 7 perturbations plus a
+native control; gate frozen in `task5b_h6_manifest.json` before the run. 1,050 perturbed pairs.
+
+| endpoint | V3 | **V4** |
+|---|---|---|
+| median FOV Dice | 0.999857 | **0.999951** |
+| p01 FOV Dice | 0.675896 | **0.983288** |
+| minimum FOV Dice | 0.447492 | 0.524130 |
+| Dice < 0.99 / < 0.95 | 230 / 168 | **20 / 6** |
+| relative FOV area, median / p95 | −0.000064 / +0.286955 | −0.000090 / **+0.000000** |
+| centroid displacement, median | 0.000027 | **0.000010** |
+| `irregular_frame_w3` median Dice | 0.969981 | **0.999952** |
+| `tb_thick_w3` median Dice | 0.971376 | **0.999952** |
+| `vessel_density_fov` >1 % / >5 % | 21.1 % / 10.7 % | **1.52 % / 0.38 %** |
+| `skel_density_fov` >1 % / >5 % | 23.7 % / 19.5 % | **3.05 % / 0.76 %** |
+| `fractal_d0/d1/d2` >5 % | 1.4 / 2.2 / 2.5 % | **0.0 / 0.57 / 0.57 %** |
+| NaN transitions | 0 | 0 |
+| **FOV valid → invalid** | **4** | **16** |
+
+By source and geometry V4 is uniform (medians 0.99987–1.000000). The zero-padding control stays
+resolved (`V4 0.00000` median |rel| for D0/D1/D2, max 0.19 / 0.13 / 0.15 %). On the **native**
+control V4 is *identical* to V3 on all 150 images — FOV Dice `1.000000` (p05 and min also 1.000000),
+validity 0 lost / 0 gained, and all five features `median rel +0.00000` with `frac>5 % = 0.0000`.
+
+**I — targeted mechanism check.** Both H5 mechanisms are gone:
+
+```
+V3 full-frame fallback exercised            : 349 of 1050 rows
+V4 fallback path                            : none exists; content threshold used in 1050/1050
+V4 threshold == V3 threshold where V3 did not fall back : 701 of 701
+V3-style canvas-scaled min_size             : 1050 of 1050 rows
+V4 min_size range                           : 191..262  (baseline range 191..262; the canvas
+                                              formula would give 239..455)
+V4 rows with any FOV pixel inside the padding : 0
+FULL_FRAME_OTSU_FALLBACK_RESIDUAL_N          : 0
+CANVAS_DEPENDENT_MINSIZE_RESIDUAL_N          : 0
+```
+
+**The one residual is a third frame-area dependence, and it is in the validity rule, not the FOV.**
+All 16 V4 valid→invalid rows carry reason `coverage_below_15pct`, on the largest pads
+(`irregular_frame_w3` 7, `tb_thick_w3` 4, `asymmetric_black_w3` 3, `novel_black_w5` 2), and their FOV
+Dice is **0.9993–0.9999** — the detected field of view is correct. `fov_coverage_fraction` is
+`fov.mean()` over the **padded file frame**, so a large pad dilutes coverage past its own 0.15 rule
+even though nothing is wrong with the measurement. V4's better threshold is what exposes it: V3's
+fallback produced a *larger* FOV, which kept those rows above 0.15 for the wrong reason.
+
+**K — photometric clipping** (`x1.50`–`x1.80` saturation) is recorded as a separate known
+operating-range limitation and is not part of this border-specific decision.
+
+```
+TASK5B_H6_CANDIDATE                        : CLINICAL_MEASUREMENT_V4_CANDIDATE
+LOCKED_SAMPLE_N                            : 150
+V4_PREDECLARED                             : YES
+UNIT_CONTENT_THRESHOLD_INVARIANCE          : PASS
+UNIT_CONTENT_MINSIZE_INVARIANCE            : PASS
+FULL_FRAME_OTSU_FALLBACK_RESIDUAL_N        : 0
+CANVAS_DEPENDENT_MINSIZE_RESIDUAL_N         : 0
+FOV_CONTENT_PRESERVING_MEDIAN_DICE         : 0.999951
+FOV_CONTENT_PRESERVING_P01_DICE            : 0.983288
+FOV_CONTENT_PRESERVING_MIN_DICE            : 0.524130
+VALID_TO_INVALID_N                         : 16      (gate required <= 2)
+VESSEL_DENSITY_GT5PCT                      : 0.0038
+SKEL_DENSITY_GT5PCT                        : 0.0076
+FRACTAL_D0_ZERO_PADDING_RESOLVED           : YES
+FRACTAL_D1_ZERO_PADDING_RESOLVED           : YES
+FRACTAL_D2_ZERO_PADDING_RESOLVED           : YES
+SOURCE_OR_GEOMETRY_FAILURE                 : NO
+V4_STATUS                                  : NOT_SUPPORTED   (10 of 12 gate checks; G5 fails)
+FULL_8870_REGENERATION_ALLOWED             : NO
+DISEASE_MODEL_TRAINING_ALLOWED             : NO
+TASK5B_H6_STATUS                           : COMPLETE
+```
+
+Per the stop rule nothing was tuned, no V5 was written, the 8,870-row table was not regenerated and no
+classifier was trained. `TASK5B_H4 = FAIL` and `TASK5B_H5 = REQUIRES_TARGETED_FIX` stand as recorded.
+The remaining mechanism is now isolated to a single line of the validity criterion — the
+`coverage < 0.15` rule divides by the padded canvas — and it is the same *class* of defect as the two
+this task fixed, which is why it is reported for one more predeclared, content-relative change rather
+than patched here.
+
 ---
 
 
