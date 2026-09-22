@@ -1,0 +1,56 @@
+% باکس‌های رنگی: دقیقاً مطابق تمپلیت HWs خواجه‌نصیر
+\newtcolorbox{phboxp}[1][]{%
+	colback=yellow!15!white,colframe=purple!75!black,fonttitle=\bfseries,
+	title=هدف,#1}
+
+\newtcolorbox{phboxb}[1][]{%
+	colback=yellow!15!white,colframe=blue!75!black,fonttitle=\bfseries,
+	title=نکته,#1}
+
+\newtcolorbox{phboxb1}[1][]{%
+	colback=white,colframe=black!75!black,fonttitle=\bfseries,
+	title=انگیزه,#1}
+
+\newtcolorbox{phboxg}[1][]{%
+	colback=yellow!15!white,colframe=green!75!black,fonttitle=\bfseries,
+	title=جمع‌بندی,#1}
+
+\newtcolorbox{phboxbr}[1][]{%
+	colback=yellow!10!white,colframe=brown!95!black,fonttitle=\bfseries,
+	title=نکات قابل ذکر,#1}
+
+\newtcolorbox{phboxr}[1][]{%
+	colback=yellow!15!white,colframe=red!75!black,fonttitle=\bfseries,
+	title=هشدار,#1}
+
+\newtcolorbox{resultbox}[1]{%
+	colback=yellow!15!white,colframe=green!75!black,fonttitle=\bfseries,
+	title=#1}
+
+\newtcolorbox{warnbox}[1]{%
+	colback=yellow!15!white,colframe=red!75!black,fonttitle=\bfseries,
+	title=#1}
+
+\newtcolorbox{infobox}[1]{%
+	colback=yellow!15!white,colframe=blue!75!black,fonttitle=\bfseries,
+	title=#1}
+
+% قاب دور شکل‌ها
+\newcommand{\figframe}[1]{%
+	\begin{tcolorbox}[colback=white,colframe=blue!70!black,boxrule=0.9pt,arc=2pt,
+		left=10pt,right=10pt,top=8pt,bottom=8pt,boxsep=2pt,
+		halign=center,width=\linewidth]
+		#1
+	\end{tcolorbox}%
+}
+
+\newcommand{\imgbox}[2][0.92\textwidth]{%
+	\begin{tcolorbox}[colback=white,colframe=black!75,boxrule=0.8pt,arc=1pt,
+		left=2pt,right=2pt,top=2pt,bottom=2pt,boxsep=1pt,halign=center]
+		\includegraphics[width=#1]{#2}%
+	\end{tcolorbox}%
+}
+
+% کد آزمایش امن برای متن فارسی؛ جلوی جابه‌جایی ویرگول و دونقطه را می‌گیرد
+\newcommand{\ex}[1]{\lr{E#1}}
+\newcommand{\vx}[1]{\lr{V#1}}

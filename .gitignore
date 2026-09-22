@@ -93,3 +93,8 @@ docs/figures/gradcam_*.png
 _private/
 _private_audit/
 **/repro_scratch/
+
+# The thesis source and its figure PDFs are deliverables, not regenerated data.
+!thesis_v9/**/*.pdf
+!report_assets_final/figures/**/*.pdf
+

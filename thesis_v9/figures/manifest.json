@@ -1,0 +1,118 @@
+{
+  "n": 18,
+  "n_per_cell": 3,
+  "max_side": 384,
+  "seed": 42,
+  "note": "RGB | soft-map heatmap | production binary mask. Not clinician GT.",
+  "clinical_dice_iou_claim": false,
+  "rows": [
+    {
+      "source": "farabi",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/Pre Plus/91abe22c-cf0d-47a8-aa26-16e1dd87c4e4.18.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus0_0_91abe22c-cf0d-47a8-aa26-16e1dd87c4e4.18.png"
+    },
+    {
+      "source": "farabi",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/No Plus/4d3d48d0-91d6-4ee6-a1df-7b137ba50d0d.19.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus0_1_4d3d48d0-91d6-4ee6-a1df-7b137ba50d0d.19.png"
+    },
+    {
+      "source": "farabi",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/Pre Plus/0dff00e0-dfed-4c35-9d2a-5eddba757584.15.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus0_2_0dff00e0-dfed-4c35-9d2a-5eddba757584.15.png"
+    },
+    {
+      "source": "farabi",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/Plus/cf53a50b-f245-48a2-b152-26c3c41676d2.23.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus1_0_cf53a50b-f245-48a2-b152-26c3c41676d2.23.png"
+    },
+    {
+      "source": "farabi",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/Plus/ff3f0a07-4be8-4d04-985f-49db8cd6a266.19.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus1_1_ff3f0a07-4be8-4d04-985f-49db8cd6a266.19.png"
+    },
+    {
+      "source": "farabi",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farabi/Plus/Plus/d098e9ff-d351-439c-83c1-8015376f1a3f.8.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farabi_plus1_2_d098e9ff-d351-439c-83c1-8015376f1a3f.8.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient52/patient52/20b2fbbe-b61f-4f29-912e-9c16af19db5b.8.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus0_0_20b2fbbe-b61f-4f29-912e-9c16af19db5b.8.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient53/patient53/79d33cea-6d03-4e03-8353-84efb69896b0.21.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus0_1_79d33cea-6d03-4e03-8353-84efb69896b0.21.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient13/patient13/bb32f1f8-7a65-48b1-aee9-4349976cbbb7.26.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus0_2_bb32f1f8-7a65-48b1-aee9-4349976cbbb7.26.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient57/patient57/d8c56f37-c6df-4e0b-936c-07f4d8444319.19.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus1_0_d8c56f37-c6df-4e0b-936c-07f4d8444319.19.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient04/patient04/e27d7aa4-bf01-462d-a0c7-ade576b536dc.30.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus1_1_e27d7aa4-bf01-462d-a0c7-ade576b536dc.30.png"
+    },
+    {
+      "source": "farfum_rop",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/farfum_rop/patients/patient25/patient25/ee8bcb40-acd8-4c10-b757-93d20c15901b.28.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/farfum_rop_plus1_2_ee8bcb40-acd8-4c10-b757-93d20c15901b.28.png"
+    },
+    {
+      "source": "plus",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Normal_comp/135_F_GA28_BW1170_PA38_DG9_PF0_D2_S03_7.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus0_0_135_F_GA28_BW1170_PA38_DG9_PF0_D2_S03_7.png"
+    },
+    {
+      "source": "plus",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Normal_comp/107_F_GA40_BW3290_PA46_DG0_PF0_D2_S02_2.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus0_1_107_F_GA40_BW3290_PA46_DG0_PF0_D2_S02_2.png"
+    },
+    {
+      "source": "plus",
+      "plus": 0,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Normal_comp/032_M_GA41_BW3060_PA41_DG0_PF0_D1_S01_8.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus0_2_032_M_GA41_BW3060_PA41_DG0_PF0_D1_S01_8.png"
+    },
+    {
+      "source": "plus",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/139_F_GA24_BW550_PA35_DG3_PF2_D2_S04_23.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus1_0_139_F_GA24_BW550_PA35_DG3_PF2_D2_S04_23.png"
+    },
+    {
+      "source": "plus",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/043_F_GA24_BW550_PA47_DG8_PF2_D1_S13_28.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus1_1_043_F_GA24_BW550_PA47_DG8_PF2_D1_S13_28.png"
+    },
+    {
+      "source": "plus",
+      "plus": 1,
+      "image_path": "/Users/moniaz/niki/data/raw/plus/Plus_dataset_main/Plus/043_F_GA24_BW550_PA57_DG8_PF2_D1_S16_37.jpg",
+      "overlay": "/Users/moniaz/niki/results/next_architecture/ladder/vessel_overlays/plus_plus1_2_043_F_GA24_BW550_PA57_DG8_PF2_D1_S16_37.png"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+step,adds,auc,delta_auc,ci_lo,ci_hi,p
+RGB embedding,-,0.924903,,,,
+C  RGB + biomarkers,5 scalar biomarkers,0.925988,0.001085,-0.001691,0.003868,0.4306
+E  RGB + vessel,spatial vessel representation,0.932841,0.007938,0.00263,0.013131,0.0031
+G  RGB + vessel + biomarkers,5 scalar biomarkers after vessel,0.93488,0.002039,-0.000274,0.004397,0.09

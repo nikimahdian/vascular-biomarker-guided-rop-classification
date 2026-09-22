@@ -1,0 +1,10 @@
+task,scientific_question
+Task 6,Which representation predicts best on the canonical split?
+Task 7,Are the differences statistically supported?
+Task 8,Does spatial vessel morphology add information?
+Task 8B,"Does that survive a 10,000-replicate closure?"
+Task 9,Can learned joint fusion beat concatenation?
+Task 10,Can biomarkers help by conditioning the vessel branch?
+Task 11,How well does this transfer to an unseen source?
+Task 12,Can class-conditional domain invariance fix the transfer?
+Task 13,Does vessel complementarity survive a different RGB backbone?

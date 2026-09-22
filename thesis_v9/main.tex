@@ -1,0 +1,158 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[top=2.5cm,bottom=2.5cm,right=3.5cm,left=2.5cm,headheight=34pt,headsep=14pt,footskip=30pt,includeheadfoot]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{amsmath,amssymb}
+\usepackage{titlesec}
+\usepackage{chngcntr}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=teal,
+    filecolor=magenta,
+    urlcolor=teal,
+    citecolor=teal
+}
+
+\usepackage{xepersian}
+% طبق شیوه‌نامه دانشگاه، قلم اصلی گزارش باید B Nazanin باشد.
+% دو نام رایج نصب این قلم پشتیبانی شده و در نبود آن کامپایل عمداً متوقف می‌شود
+% تا گزارش ناخواسته با قلم دیگری تحویل نشود.
+\IfFontExistsTF{B Nazanin}{%
+  \settextfont[Scale=1.15]{B Nazanin}%
+}{%
+  \IfFontExistsTF{BNazanin}{%
+    \settextfont[Scale=1.15]{BNazanin}%
+  }{%
+    \PackageError{ROP-Thesis}{Font B Nazanin is not installed}{Install B Nazanin (or BNazanin) and compile again with XeLaTeX.}%
+  }%
+}
+\setlatintextfont[Scale=1]{Times New Roman}
+% نویسه‌ی گلوله‌ی فهرست‌ها در قلم B Nazanin وجود ندارد؛ از قلم لاتین استفاده می‌شود.
+\newfontfamily\bulletfont[Scale=1]{Times New Roman}
+\renewcommand{\labelitemi}{{\bulletfont\char"2022}}
+\renewcommand{\labelitemii}{{\bulletfont\char"25AA}}
+% علامت درصد فارسی در B Nazanin ممکن است به‌صورت مربع نمایش داده شود.
+% این قلمِ همراه پروژه فقط برای همان نویسه استفاده می‌شود.
+\newfontfamily\persianpercentfont[Path=font/]{IRLotus.TTF}
+\newcommand{\ppercent}{{\persianpercentfont ٪}}
+\renewcommand{\baselinestretch}{1.5}
+\graphicspath{{./img/}{./figures/}}
+% جلوگیری از سرریز جزئی خطوط (نام‌های لاتین بلند و متن فارسی)
+\tolerance=2200
+\emergencystretch=3em
+\hbadness=10000
+
+\captionsetup{
+    font=small,
+    labelfont=bf,
+    skip=6pt
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\includegraphics[width=1cm]{img/Logo.png} پروژه کارشناسی: تشخیص پلاس در رتینوپاتی نارس}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \rhead{\includegraphics[width=1cm]{img/Logo.png} پروژه کارشناسی: تشخیص پلاس در رتینوپاتی نارس}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{1pt}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+}
+\raggedbottom
+
+% شماره‌های فصل‌ها، زیربخش‌ها، شکل‌ها، جدول‌ها و پانویس‌ها فارسی‌اند.
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection-\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection-\arabic{subsubsection}}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\renewcommand{\thefigure}{\thesection-\arabic{figure}}
+\renewcommand{\thetable}{\thesection-\arabic{table}}
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\titleformat{\section}[display]{\centering\Huge\bfseries}{فصل \thesection}{0.5em}{}
+\titlespacing*{\section}{0pt}{0pt}{2.5em}
+
+% توضیح فارسی اصطلاحات تخصصی با شماره‌ی بالانویس در پانویس همان صفحه می‌آید.
+% داخل آرگومان، تکه‌های لاتین را با \lr{...} بنویسید.
+\newcommand{\enfoot}[1]{\footnote{#1}}
+
+\AtBeginDocument{
+    \def\sectionautorefname{فصل}
+    \def\subsectionautorefname{بخش}
+    \def\figureautorefname{شکل}
+    \def\tableautorefname{جدول}
+    \def\equationautorefname{رابطه}
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    stringstyle=\color{codepurple},
+    basicstyle=\setLTR\ttfamily\footnotesize,
+    breaklines=true,
+    numbers=none,
+    tabsize=2,
+    showspaces=false,
+    keepspaces=true,
+    captiondirection=RTL
+}
+\lstset{style=mystyle}
+\def\lstlistingname{برنامه}
+
+\input{Settings.tex}
+
+\newcommand{\figdir}{figures}
+
+\begin{document}
+
+\input{frontmatter}
+
+\input{chapters/01_abstract}
+\input{chapters/00_abbreviations}
+\clearpage
+\tableofcontents \clearpage
+\listoffigures \clearpage
+\listoftables \clearpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapters/ch01_intro}
+\input{chapters/ch02_concepts}
+\input{chapters/ch03_related}
+\input{chapters/ch04_problem}
+\input{chapters/ch05_method}
+\input{chapters/ch06_results}
+\input{chapters/ch07_conclusion}
+
+\clearpage
+\section*{پیوست‌ها}
+\addcontentsline{toc}{section}{پیوست‌ها}
+\input{chapters/10_appendix}
+\input{chapters/10b_metadata}
+
+\input{bibliography.tex}
+\input{chapters/00_english_abstract}
+
+\end{document}

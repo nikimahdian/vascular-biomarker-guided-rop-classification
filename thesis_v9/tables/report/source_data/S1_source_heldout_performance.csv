@@ -1,0 +1,10 @@
+panel,held_out_source,model,value
+3-class AUC,farfum_rop,B_LOSO,0.7875370112781918
+3-class AUC,farabi,B_LOSO,0.7699439273173366
+3-class AUC,farfum_rop,E_LOSO,0.8097790006662761
+3-class AUC,farabi,E_LOSO,0.7828978568034796
+3-class AUC,farfum_rop,G_LOSO,0.8061976238424267
+3-class AUC,farabi,G_LOSO,0.7844768717564466
+restricted binary AUC,plus,B_LOSO,0.9838243794978664
+restricted binary AUC,plus,E_LOSO,0.9845785273108376
+restricted binary AUC,plus,G_LOSO,0.9841322321075092

@@ -1,0 +1,26 @@
+
+\section*{چکیده انگلیسی}
+\addcontentsline{toc}{section}{چکیده انگلیسی}
+\begin{latin}
+\begin{center}
+\Large\textbf{Plus Disease Detection in Retinopathy of Prematurity}\\[0.2cm]
+\large\textbf{Vascular Biomarkers and Frozen Image Representations for \lr{Plus} Disease Detection}\\[0.8cm]
+\Large\textbf{Abstract}
+\end{center}
+
+\noindent
+Retinopathy of prematurity is a leading cause of preventable childhood blindness, and treatment decisions depend on recognising \lr{Plus} disease. That recognition rests on expert visual assessment of fundus images and remains observer-dependent near its boundaries. This project asks whether five scalar vascular biomarkers separate \lr{Plus} on their own, and whether adding them to a learned image representation provides an incremental contribution.
+
+Three components were built. The measurement component computes five vascular biomarkers with field-of-view-aware definitions and a content-area coverage denominator. The representation component provides two frozen encoders, an RGB representation from EfficientNet-B5 and a vessel-map representation from EfficientNet-B4. Eight primary models were built from these components, alongside secondary neural models. The cohort contains 8{,}862 fundus images from 414 groups across three acquisition sources, split by group so that no group appears in more than one partition.
+
+Adding the spatial vessel representation to the image representation produced a supported improvement in ranking performance and in probability quality, and the increment replicated under source-held-out evaluation, which uses no target-source information of any kind, and also with a different RGB architecture. The five scalar biomarkers produced no supported incremental contribution in any tested regime; used alone they ranked well above chance yet below every image-based model.
+
+Cross-source performance is markedly lower than pooled-test performance, no expert reference mask exists for this cohort and the \lr{Plus} source supports only the restricted \lr{Normal}-versus-\lr{Plus} comparison, so these results demonstrate ranking ability against the recorded label and are not evidence of clinical readiness, not a replacement for expert assessment, and not externally validated.
+
+\vspace{0.6cm}
+\noindent\textbf{Keywords:}
+retinopathy of prematurity, \lr{Plus} disease, vascular biomarkers, frozen image representations,
+vessel representation fusion, grouped split with fingerprint, paired bootstrap,
+source-held-out evaluation
+\end{latin}
+\clearpage

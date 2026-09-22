@@ -1,0 +1,13 @@
+statistic,held_out_source,model,value
+centroid_distance_standardized,plus,K0,12.002962112426758
+centroid_distance_standardized,farfum_rop,K0,82.27141571044922
+centroid_distance_standardized,farabi,K0,81.80416870117188
+centroid_distance_standardized,plus,K1,11.134068489074709
+centroid_distance_standardized,farfum_rop,K1,71.0438461303711
+centroid_distance_standardized,farabi,K1,63.86116790771485
+median_abs_smd,plus,K0,0.6260690689086914
+median_abs_smd,farfum_rop,K0,2.6314191818237305
+median_abs_smd,farabi,K0,1.935347437858581
+median_abs_smd,plus,K1,0.5769973993301392
+median_abs_smd,farfum_rop,K1,2.2002670764923096
+median_abs_smd,farabi,K1,1.5502957105636597
