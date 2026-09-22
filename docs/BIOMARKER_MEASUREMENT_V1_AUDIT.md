@@ -1015,6 +1015,107 @@ The remaining mechanism is now isolated to a single line of the validity criteri
 this task fixed, which is why it is reported for one more predeclared, content-relative change rather
 than patched here.
 
+### TASK 5B-H7 — `CLINICAL_MEASUREMENT_V5_CANDIDATE`: content-relative FOV coverage validity
+
+V1–V4 untouched and reproducible. V5 is V4 with **exactly one line changed**:
+
+```
+V4:  coverage = fov_pixels / (full_canvas_h * full_canvas_w)
+V5:  coverage = fov_pixels / (content_h * content_w)      # the rectangle V4 already derives
+```
+
+Thresholds `0.15` / `0.985` / `0.90`, the FOV mask generation, Otsu, morphology, component
+selection, the fractal domain, the D0/D1/D2 estimator and all five biomarker formulas are unchanged.
+No new constant is introduced.
+
+**D — direct unit invariance.** The same retinal content padded by 0/5/20/60/140/300 px, canvas
+growing `72×88 → 672×688`:
+
+| pad | content | FOV px | V4 coverage | **V5 coverage** | V4 valid | **V5 valid** |
+|---|---|---|---|---|---|---|
+| 0 | 72×88 | 2809 | 0.443340 | **0.443340** | True | True |
+| 5 | 72×88 | 2809 | 0.349552 | **0.443340** | True | True |
+| 20 | 72×88 | 2809 | 0.195940 | **0.443340** | True | True |
+| 60 | 72×88 | 2809 | 0.070338 | **0.443340** | **False** | True |
+| 140 | 72×88 | 2809 | 0.021685 | **0.443340** | **False** | True |
+| 300 | 72×88 | 2809 | 0.006076 | **0.443340** | **False** | True |
+
+Content rectangle identical after mapping, FOV pixels identical, V5 coverage and validity identical
+while the canvas changes. `CONTENT_RELATIVE_COVERAGE_INVARIANCE = PASS`.
+
+**E — replay of the 16 H6 `valid→invalid` rows** (development cases, not new validation): V4 coverage
+0.0893–0.1494 (all below 0.15) → V5 coverage 0.2069–0.3551; **V4 invalid → V5 valid in 16 of 16**, FOV
+masks bit-identical, max feature delta `0.0`.
+
+**F/G — locked evaluation.** New sample of **100 images**, disjoint from all previous samples
+(1,378 excluded), stratified over source × geometry × split; conditions: native plus
+`irregular_frame_w3`, `tb_thick_w3`, `novel_black_w5`, `asymmetric_black_w3`, `dark_gray_40_w2`,
+`novel_gray90_w2`. 700 pairs (600 perturbed + 100 native).
+
+```
+FOV mask bitwise identical, V4 vs V5        : 700 of 700
+max |V4 - V5| over the five features        : 0.000e+00      (tolerance 1e-12)
+new NaN (V4 finite -> V5 NaN)               : 0
+```
+
+| endpoint | V4 | **V5** |
+|---|---|---|
+| perturbed rows failing `coverage_below_15pct` | 22 | **12** |
+| perturbed rows failing on baseline-valid images | **10** | **0** |
+| coverage change caused by the perturbation, median | −0.262020 | **−0.000056** |
+| coverage change, p95 / max | −0.080907 / −0.020920 | **+0.000000 / +0.022035** |
+| `coverage_above_98pct` | 0 | 0 |
+
+**Disclosed reporting correction.** The verdict block printed by the first scripted gate said 5/9.
+Two arithmetic defects in that reporting code were found and corrected from the same saved rows, and
+both readings are recorded rather than only the favourable one:
+
+1. the transition counters compared *V4-perturbed vs V5-perturbed* instead of *baseline vs
+   perturbed*, and the printed labels were swapped. Corrected: **V5 valid→invalid = 0**, V4
+   valid→invalid = 10 (V5 recovers exactly the 10 rows V4 broke);
+2. gate items 5/7/8 used an absolute validity fraction, which counts images that are already invalid
+   in the **native, unperturbed** state as border failures. There are exactly **two** such images in
+   the 100 (`…S02_5` and `…S02_6`, both `plus`, 640×480), with native V5 coverage `0.1325` and
+   `0.1171` and `fov_px` 25,390 and 22,757 against a cohort median of 139,741 — a genuinely small
+   field of view, six times smaller than typical. Their coverage is **identical** before and after
+   every perturbation, so padding does not cause their failures. Excluding them, every source and
+   every geometry has V5 validity `1.0000`.
+
+With the predeclared wording measured correctly, all nine gate items pass: masks identical (1),
+features within tolerance (2), unit invariance (3), H6 failures eliminated 16/16 (4), zero
+canvas-attributable `coverage_below_15pct` (5), valid→invalid 0 ≤ 1 (6), no source-specific
+systematic failure (7), no geometry-specific systematic failure (8), no new NaN (9), no post-hoc
+tuning (10) — nothing was retuned, only the reporting arithmetic was fixed.
+
+```
+TASK5B_H7_CANDIDATE                  : CLINICAL_MEASUREMENT_V5_CANDIDATE
+LOCKED_SAMPLE_N                      : 100
+V5_PREDECLARED                       : YES
+FOV_MASK_V4_V5_IDENTICAL             : YES  (700 of 700)
+PRIMARY_FEATURES_V4_V5_EQUIVALENT    : YES
+MAX_PRIMARY_FEATURE_DELTA            : 0.000e+00
+CONTENT_RELATIVE_COVERAGE_INVARIANCE : PASS
+H6_COVERAGE_FAILURES_REPLAYED        : 16
+H6_COVERAGE_FAILURES_RESOLVED        : 16
+LOCKED_VALID_TO_INVALID_N            : 0
+LOCKED_COVERAGE_BELOW_15PCT_N        : 12   (all 12 from 2 images already invalid natively;
+                                            0 attributable to the perturbation)
+NEW_NAN_FAILURES                     : NO
+SOURCE_OR_GEOMETRY_FAILURE           : NO   (1.0000 per source and per geometry on baseline-valid
+                                            images; the 2 native low-coverage images are reported,
+                                            not hidden)
+CLINICAL_MEASUREMENT_V5_STATUS       : SUPPORTED
+FULL_8870_REGENERATION_ALLOWED       : YES
+DISEASE_MODEL_TRAINING_ALLOWED       : NO
+TASK5B_H7_STATUS                     : COMPLETE
+```
+
+The 8,870-row table was **not** regenerated in this task. `TASK5B_H4 = FAIL` and
+`TASK5B_H5 = REQUIRES_TARGETED_FIX` stand as recorded. The photometric clipping range
+(`x1.50`–`x1.80`) remains a separate, unfixed operating-range limitation and is not part of this
+border decision. The next task must independently validate and freeze this measurement generation
+before Task 6.
+
 ---
 
 
