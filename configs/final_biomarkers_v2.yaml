@@ -1,0 +1,27 @@
+# FINAL_BIOMARKERS_V2 — frozen measurement generation
+generation: FINAL_BIOMARKERS_V2
+measurement_version: CLINICAL_MEASUREMENT_V5_CANDIDATE
+git_commit_of_generation_code: b79f336
+table: data/features/final_biomarkers_v2.csv
+table_sha256: b4661dffd2e082f93d183cdb26ae0462dce8af32b135c1968db2deacc493365e
+canonical_n: 8870
+canonical_cohort_fingerprint: 0d4c3b3a60761ca1bda88924dbc0cbf6f1be604a6e10dd5e981e40b73f05f9c8
+segmentation_generation: SEG_CURRENT_V1
+segmentation_checkpoint: weights/best_weight_DeepLabV3+_resize_27
+segmentation_checkpoint_sha256: c373f53813ee60b89651a04a98bc5f1d6bc60a5a50f45c4e10f42475650d5374
+mask_manifest: data/masks/mask_manifest_canonical_v1.csv
+mask_manifest_sha256: b3bc6538026d6ad0fc1342043e5ca2d6de56662233bf6d0709d9d875f24b21cd
+v1_feature_table_sha256: f1c41e923ae29d4e228097536765f5e7399963062253ad925657a077cddc10c0
+complete_case_n: 8862
+excluded_n: 8
+final_primary_features: [vessel_density_fov, skel_density_fov, fractal_d0, fractal_d1, fractal_d2]
+primary_population_manifest: data/splits/primary_complete_case_v2.csv
+excluded_manifest: data/splits/primary_excluded_v2.csv
+sources: {"plus": 5931, "farfum_rop": 1529, "farabi": 1410}
+splits: {"train": 6211, "test": 1331, "val": 1328}
+fov_valid_n: 8825
+fov_invalid_n: 45
+determinism_subset_n: 128
+determinism_max_delta: 2.220e-16
+photometric_clipping_limitation: 'x1.50-x1.80 saturation remains a separate known operating-range limitation; not addressed by V5'
+disease_model_training_allowed: 'no'

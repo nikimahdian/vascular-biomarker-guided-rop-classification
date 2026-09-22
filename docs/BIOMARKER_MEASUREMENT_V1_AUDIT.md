@@ -1116,6 +1116,101 @@ The 8,870-row table was **not** regenerated in this task. `TASK5B_H4 = FAIL` and
 border decision. The next task must independently validate and freeze this measurement generation
 before Task 6.
 
+### TASK 5B-H8 — independent V5 verification and `FINAL_BIOMARKERS_V2` freeze
+
+**B — `INDEPENDENT_H7_RECHECK = PASS`.** Done with a standalone script (`scripts/task5b_h8_recheck.py`)
+that does not import, call or reuse the H7 gate-summary code and changes no threshold. All eight items
+verified from the saved raw rows:
+
+| # | item | result |
+|---|---|---|
+| 1 | FOV mask V4 == V5, bitwise | PASS — 700/700 locked + 16/16 replay |
+| 2 | five features \|V4−V5\| ≤ 1e-12 | PASS — max `0.000e+00` |
+| 3 | H6 coverage failures resolved | PASS — 16 of 16 recovered |
+| 4 | baseline-valid → perturbed-invalid | PASS — **0** (V4: 10) |
+| 5 | `coverage_below_15pct` attributable to the perturbation | PASS — **0** of 12 |
+| 6 | source-specific failure | PASS — 1.0000 in all three sources |
+| 7 | geometry-specific failure | PASS — 1.0000 in all five geometries |
+| 8 | new NaN | PASS — 0 |
+
+The 12 residual rows are the two images already invalid natively; their coverage deltas under every
+perturbation are −0.000021 to −0.003385.
+
+**C–K — full canonical generation.** `measure_v5` over all **8,870** canonical images with the
+canonical image↔mask mapping and `SEG_CURRENT_V1` masks, written to
+`data/features/final_biomarkers_v2.csv` (the V1 table is untouched).
+
+Integrity, 10 of 10 PASS: 8,870 rows, 0 duplicates, 0 missing, 0 extra, one row per image, source and
+split counts equal to the canonical cohort, mask paths identical to the canonical table, measurement
+version uniform. Sources `plus` 5,931 / `farfum_rop` 1,529 / `farabi` 1,410; splits train 6,211 /
+test 1,331 / val 1,328.
+
+Primary population recomputed under the predeclared complete-case policy: **complete-case 8,862,
+excluded 8** — the same eight images as V1, not assumed. All eight are `train` (`plus` 6, `farabi` 1,
+`farfum_rop` 1; geometry 640×480 5, 1280×960 1, 1440×1080 1, 1600×1200 1) and every exclusion is the
+same reason: `fractal_d0/d1/d2 = NaN` from the estimator's exception path. Two of them are also the
+H7 native-invalid examples — a very small field of view produces both.
+
+| feature | finite | missing |
+|---|---|---|
+| `vessel_density_fov` | 8,870 | 0 |
+| `skel_density_fov` | 8,870 | 0 |
+| `fractal_d0` / `d1` / `d2` | 8,862 | 8 |
+
+**G — V1 → V5 native drift.**
+
+| feature | median abs | median rel | p95 abs | max abs | corr | rows >5 % |
+|---|---|---|---|---|---|---|
+| `vessel_density_fov` | 0.000000 | +0.00000 | 0.001724 | 0.086403 | 0.997641 | 86 |
+| `skel_density_fov` | 0.000000 | +0.00000 | 0.000752 | 0.032388 | 0.997076 | 281 |
+| `fractal_d0` | 0.049956 | −0.03578 | 0.121653 | 0.247699 | 0.889561 | 2,934 |
+| `fractal_d1` | 0.048132 | −0.03511 | 0.124186 | 0.273175 | 0.874853 | 2,752 |
+| `fractal_d2` | 0.047428 | −0.03485 | 0.121001 | 0.313262 | 0.872297 | 2,738 |
+
+The two density features are effectively unchanged at the median and correlate 0.997 with V1. **The
+fractal rows are version-drift characterisation, not an equivalence requirement**: the analysis-domain
+definition intentionally changed, and the shift is the ≈−3.5 % canvas-domain effect that the
+zero-padding control measures directly.
+
+**I — FOV validity on all 8,870 native images:** valid **8,825**, invalid **45** —
+`fragmented_bright_region` 27, `coverage_below_15pct` 18; invalid by source `plus` 33 /
+`farfum_rop` 11 / `farabi` 1; by geometry 1240×1240 28, 1600×1200 11, 640×480 4, 1280×960 1,
+1440×1080 1. Coverage median 0.645241, p01 0.231359, min 0.054493. Both H7 native-invalid examples
+remain invalid (0.132505 and 0.117121) — **the thresholds were not changed to rescue any image.**
+
+**J — determinism:** 128 images spanning **3 sources, 5 geometries, 3 splits**, re-measured
+independently; max |feature delta| **2.220e-16** (atol 1e-12), validity fields exactly identical,
+coverage exactly identical.
+
+```
+INDEPENDENT_H7_RECHECK                : PASS
+V5_FULL_GENERATION_EXECUTED           : YES
+CANONICAL_N                           : 8870
+GENERATED_ROW_N                       : 8870
+PRIMARY_COMPLETE_CASE_N               : 8862
+PRIMARY_EXCLUDED_N                    : 8
+VESSEL_DENSITY_FINITE_N               : 8870
+SKEL_DENSITY_FINITE_N                 : 8870
+FRACTAL_D0_FINITE_N                   : 8862
+FRACTAL_D1_FINITE_N                   : 8862
+FRACTAL_D2_FINITE_N                   : 8862
+FOV_VALID_N                           : 8825
+FOV_INVALID_N                         : 45
+DETERMINISTIC_RECHECK_N               : 128
+DETERMINISTIC_RECHECK_MAX_DELTA       : 2.220e-16
+FINAL_BIOMARKER_TABLE_SHA256          : b4661dffd2e082f93d183cdb26ae0462dce8af32b135c1968db2deacc493365e
+FINAL_PRIMARY_FEATURE_N               : 5
+FINAL_BIOMARKER_GENERATION            : FINAL_BIOMARKERS_V2
+FINAL_BIOMARKER_GENERATION_FROZEN     : YES
+READY_FOR_TASK5C_J                    : YES
+DISEASE_MODEL_TRAINING_ALLOWED        : NO
+TASK5B_H8_STATUS                      : COMPLETE
+```
+
+Artifacts frozen: `configs/final_biomarkers_v2.yaml`, `data/splits/primary_complete_case_v2.csv`,
+`data/splits/primary_excluded_v2.csv`, `_private_audit/task5b_h8_freeze.json`. No classifier was
+trained, no AUC was computed and no biomarker was tuned with disease labels.
+
 ---
 
 
