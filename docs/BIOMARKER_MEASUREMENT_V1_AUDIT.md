@@ -1211,6 +1211,58 @@ Artifacts frozen: `configs/final_biomarkers_v2.yaml`, `data/splits/primary_compl
 `data/splits/primary_excluded_v2.csv`, `_private_audit/task5b_h8_freeze.json`. No classifier was
 trained, no AUC was computed and no biomarker was tuned with disease labels.
 
+### TASK 5C-J — segmentation error → biomarker error: STOPPED AT THE PAIRING INTEGRITY CHECK
+
+The task requires the HVDROPDB vessel references to be matched to the cohort **by content, never by
+filename**, and its own success rule requires "all 100 expert cases are correctly paired".
+
+Benchmark set: **100 vessel references, 50 RetCam + 50 Neo, all 100 with an expert mask**
+(`HVDROPDB-BV/{RetCam,Neo}_Vessels_{images,masks}`). Pairing was attempted by decoded-pixel hash
+(64×64 greyscale MD5) for every reference against all 8,870 canonical cohort images, hashed the same
+way in the same pass.
+
+```
+paired by content hash : 0
+  RetCam : 0 of 50 references matched a canonical image
+  Neo    : 0 of 50 references matched a canonical image
+```
+
+**The benchmark images are not the project cohort images.** No content-identity link exists between
+the two sets, so the frozen `SEG_CURRENT_V1` predicted masks — which exist only for the 8,870 cohort
+images — cannot be attached to any expert reference without either filename matching (explicitly
+forbidden by the task) or running the segmentation checkpoint on the benchmark images (not permitted
+by "do not regenerate segmentation if the frozen masks already exist and identity is verified", since
+they do not exist and identity is not verified).
+
+Consequences, applied literally: sections B–G all require a predicted mask on the same RGB as an
+expert mask, so none of them can be computed. **Section A's integrity condition fails and the task
+stops before any measurement**, per the success rule's requirement of "no integrity failure is
+discovered". No threshold was tuned, no pairing was invented, no filename fallback was used, and
+`FINAL_BIOMARKERS_V2` was not touched.
+
+```
+TASK5C_J_BENCHMARK_N        : 100
+RETCAM_N                    : 50
+NEO_N                       : 50
+PAIRED_BY_CONTENT_HASH_N    : 0
+SEG_DICE_RETCAM             : NOT_COMPUTED
+SEG_DICE_NEO                : NOT_COMPUTED
+SEG_CLDICE_RETCAM           : NOT_COMPUTED
+SEG_CLDICE_NEO              : NOT_COMPUTED
+THIN/MID/THICK_RECALL       : NOT_COMPUTED
+FINAL_PRIMARY_ERROR_MEDIANS : NOT_COMPUTED
+FINAL_PRIMARY_CHANGED       : NO
+FINAL_BIOMARKER_GENERATION  : FINAL_BIOMARKERS_V2
+READY_FOR_TASK6_D           : NO
+TASK5C_J_STATUS             : INCOMPLETE
+```
+
+**What would unblock it**, for a separate decision: either (a) an authority-provided
+reference↔cohort pairing manifest, or (b) an explicit authorisation to run the **frozen**
+`SEG_CURRENT_V1` checkpoint (sha `c373f538…`) on the 100 external benchmark images — inference only,
+no retraining and no change to the segmentation generation — which would then allow every section to
+run exactly as specified. The pairing evidence is saved at `_private_audit/task5c_j_pairing.csv`.
+
 ---
 
 
