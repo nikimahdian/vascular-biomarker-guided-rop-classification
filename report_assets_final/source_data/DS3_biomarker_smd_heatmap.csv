@@ -1,0 +1,16 @@
+biomarker,held_out_source,smd_vs_train
+fractal_d0,plus,0.8667048104679417
+fractal_d1,plus,0.7537698071721864
+fractal_d2,plus,0.6995882589069736
+skel_density_fov,plus,1.1051369200389531
+vessel_density_fov,plus,0.9881521049066274
+fractal_d0,farfum_rop,-0.3930853045353071
+fractal_d1,farfum_rop,-0.3346317246898655
+fractal_d2,farfum_rop,-0.3008298254553815
+skel_density_fov,farfum_rop,-0.3789146218827978
+vessel_density_fov,farfum_rop,-0.3906928371903073
+fractal_d0,farabi,-0.967606024642847
+fractal_d1,farabi,-0.8662061955246909
+fractal_d2,farabi,-0.8212376601603698
+skel_density_fov,farabi,-0.9557920055584912
+vessel_density_fov,farabi,-1.0225286579319413

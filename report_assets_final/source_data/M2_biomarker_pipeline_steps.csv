@@ -1,0 +1,5 @@
+step,detail
+RGB fundus image,canonical 384x384 input
+vessel segmentation,frozen SEG_CURRENT_V2_RESOLVER_SAFE
+FOV-aware vascular measurement,coverage denominator = content area (V5)
+five scalar biomarkers,"vessel_density_fov, skel_density_fov, fractal_d0, fractal_d1, fractal_d2"

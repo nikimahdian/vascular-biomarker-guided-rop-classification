@@ -1,0 +1,8 @@
+**Canonical group-disjoint split of the complete-case population.**
+
+| Split | N | Normal | Pre-Plus | Plus | Groups |
+|---|---|---|---|---|---|
+| Train | 6203 | 4490 | 650 | 1063 | 290 |
+| Val | 1328 | 981 | 140 | 207 | 62 |
+| Test | 1331 | 982 | 140 | 209 | 62 |
+| Total | 8862 | 6453 | 930 | 1479 | 414 |

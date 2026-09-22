@@ -1,0 +1,5 @@
+label,delta,lo,hi,p,reps,source
+"EfficientNet-B5 RGB representation
+(E - B embedding)",0.007938221861095,0.0026295228146692,0.0131313433584046,0.0031,10000,task8b paired_metrics_10k.csv
+"Dual-backbone attention RGB representation
+(M1 - M0)",0.0209356933785853,0.0114256580690374,0.0308283103815818,0.0,10000,task13 paired_all_10k.csv

@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Master test-set performance table. AUC, balanced accuracy and macro F1 are higher-is-better; Brier and ECE are lower-is-better. Bold marks the numerically best value in each metric column; models are not ranked by any composite score.}
+\label{tab:master}
+\begin{tabular}{p{4.2cm}p{5.4cm}rrrrr}
+\toprule
+Model & Input / architecture & AUC & Balanced accuracy & Macro F1 & Brier & ECE \\
+\midrule
+Scalar biomarkers & 5 biomarkers -> XGBoost & 0.6596 & 0.4985 & 0.4346 & 0.5675 & 0.0502 \\
+RGB CNN & RGB -> EfficientNet-B5 (2048) -> linear classifier & 0.9133 & 0.6986 & 0.6848 & 0.2623 & 0.0497 \\
+RGB embedding & RGB -> EfficientNet-B5 (2048) -> XGBoost & 0.9249 & 0.7234 & 0.7087 & 0.2763 & 0.1028 \\
+RGB + biomarkers & 2048 RGB + 5 biomarkers (2053) -> XGBoost & 0.9260 & 0.7204 & 0.7093 & 0.2690 & 0.0986 \\
+Vessel map CNN & Vessel map -> EfficientNet-B4 (1792) -> linear classifier & 0.8372 & 0.6200 & 0.5887 & 0.3812 & 0.0800 \\
+RGB + vessel & 2048 RGB + 1792 vessel (3840) -> XGBoost & 0.9328 & 0.7350 & 0.7246 & 0.2486 & 0.0921 \\
+RGB + vessel late fusion & alpha-weighted late fusion of B\_EMBEDDING\_ONLY and D (alpha = 1.0) & 0.9249 & 0.7234 & 0.7087 & 0.2763 & 0.1028 \\
+RGB + vessel + biomarkers & 2048 RGB + 1792 vessel + 5 biomarkers (3845) -> XGBoost & 0.9349 & 0.7389 & 0.7292 & 0.2465 & 0.0921 \\
+\bottomrule
+\multicolumn{7}{l}{\footnotesize Bold = best per column. AUC 0.934880; balanced accuracy 0.738895; macro F1 0.729163; Brier 0.246515; ECE 0.049685. F\_RGB\_VESSEL\_LATE\_FUSION collapsed to B\_EMBEDDING\_ONLY because its alpha saturated at 1.0.} \\
+\end{tabular}
+\end{table}

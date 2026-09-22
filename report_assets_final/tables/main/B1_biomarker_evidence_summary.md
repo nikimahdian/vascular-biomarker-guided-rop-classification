@@ -1,0 +1,11 @@
+**Evidence summary for the five scalar biomarkers across every experiment in which they were tested. The last row uses the restricted Normal-vs-Plus binary AUC because the Plus source contains no Pre-Plus.**
+
+| Experiment | Baseline | Biomarker model | Delta AUC | 95% CI | p | Interpretation |
+|---|---|---|---|---|---|---|
+| Canonical split: C vs B embedding | RGB embedding | RGB + biomarkers | 0.0011 | [-0.001691, +0.003868] | 0.4313 | no statistically supported increment |
+| Canonical split: G vs E | RGB + vessel | RGB + vessel + biomarkers | 0.0020 | [-0.000274, +0.004397] | 0.0900 | no statistically supported increment |
+| Joint neural fusion: I vs H | Joint RGB-vessel | Joint RGB-vessel + biomarkers | -0.0096 | [-0.016273, -0.002854] | 0.0049 | statistically supported decrease |
+| FiLM conditioning: J1 vs J0 | Frozen fusion control | Biomarker-conditioned FiLM | -0.0021 | [-0.004427, +0.000143] | 0.0682 | no statistically supported increment |
+| Held-out FARFUM-RoP: G vs E | RGB + vessel (LOSO) | RGB + vessel + biomarkers (LOSO) | -0.0036 | [-0.008233, +0.001189] | 0.1339 | no statistically supported increment |
+| Held-out Farabi: G vs E | RGB + vessel (LOSO) | RGB + vessel + biomarkers (LOSO) | 0.0016 | [-0.002785, +0.005956] | 0.4839 | no statistically supported increment |
+| Held-out Plus (restricted): G vs E | RGB + vessel (LOSO) | RGB + vessel + biomarkers (LOSO) | -0.0004 | [-0.001982, +0.001100] | 0.5705 | no statistically supported increment |

@@ -1,0 +1,8 @@
+model,architecture
+A  Scalar biomarkers,5 biomarkers  ->  XGBoost  ->  3 classes
+B  RGB CNN,RGB  ->  EfficientNet-B5  ->  classifier  ->  3 classes
+B-emb  RGB embedding,RGB  ->  EfficientNet-B5  ->  2048-d  ->  XGBoost
+C  RGB + biomarkers,2048-d RGB + 5 biomarkers (2053-d)  ->  XGBoost
+D  Vessel map CNN,Vessel map  ->  EfficientNet-B4  ->  classifier  ->  3 classes
+E  RGB + vessel,2048-d RGB + 1792-d vessel (3840-d)  ->  XGBoost
+G  RGB + vessel + biomarkers,2048-d RGB + 1792-d vessel + 5 biomarkers (3845-d)  ->  XGBoost

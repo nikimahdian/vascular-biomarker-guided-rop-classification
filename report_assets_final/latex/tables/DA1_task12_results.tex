@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Task 12 class-conditional domain-invariance results. K0 is the matched domain-neutral control and K1 adds the GRL domain discriminator and class-conditional MMD. The Plus row reports the restricted Normal-vs-Plus binary AUC for the AUC line.}
+\label{tab:task12}
+\begin{tabular}{p{3.6cm}p{5.0cm}rrrrr}
+\toprule
+Held-out source & Metric & K0 & K1 & K1-K0 & 95\% CI & p \\
+\midrule
+FARFUM-RoP & AUC & 0.8329 & 0.8301 & -0.0028 & [-0.006546, +0.000985] & 0.1428 \\
+FARFUM-RoP & Balanced accuracy & 0.6254 & 0.6282 & 0.0027 & [-0.007247, +0.012701] & 0.5865 \\
+FARFUM-RoP & Macro F1 & 0.5716 & 0.5593 & -0.0123 & [-0.023740, -0.001240] & 0.0317 \\
+FARFUM-RoP & Brier & 0.6459 & 0.7002 & 0.0543 & [+0.048319, +0.060152] & <0.0001 \\
+FARFUM-RoP & ECE & 0.2605 & 0.2996 & 0.0391 & [+0.030698, +0.051016] & <0.0001 \\
+Farabi & AUC & 0.7919 & 0.7910 & -0.0009 & [-0.002439, +0.000685] & 0.2588 \\
+Farabi & Balanced accuracy & 0.5373 & 0.5346 & -0.0027 & [-0.010735, +0.005277] & 0.5089 \\
+Farabi & Macro F1 & 0.5011 & 0.5035 & 0.0024 & [-0.007202, +0.012421] & 0.6351 \\
+Farabi & Brier & 0.5993 & 0.5945 & -0.0048 & [-0.007563, -0.002140] & 0.0009 \\
+Farabi & ECE & 0.2176 & 0.2171 & -0.0005 & [-0.008015, +0.007136] & 0.8908 \\
+Plus (restricted) & Restricted binary AUC (Normal vs Plus) &  &  & 0.0005 & [+0.000146, +0.000900] & 0.0123 \\
+Plus (restricted) & Balanced accuracy & 0.9417 & 0.9419 & 0.0002 & [-0.000943, +0.001320] & 0.8088 \\
+Plus (restricted) & Macro F1 & 0.8742 & 0.8709 & -0.0033 & [-0.005930, -0.000756] & 0.0137 \\
+Plus (restricted) & Restricted 2-class Brier & 0.1080 & 0.1131 & 0.0051 & [+0.004792, +0.005451] & <0.0001 \\
+Plus (restricted) & ECE & 0.2321 & 0.2311 & -0.0010 & [-0.002998, +0.001084] & 0.3546 \\
+\bottomrule
+\end{tabular}
+\end{table}

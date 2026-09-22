@@ -1,0 +1,17 @@
+{
+  "figures_main": 27,
+  "figures_methods": 4,
+  "figures_appendix": 8,
+  "pdf_count": 39,
+  "svg_count": 39,
+  "source_data_csv": 37,
+  "latex_tables": 12,
+  "tables_main_csv": 10,
+  "tables_appendix_csv": 2,
+  "captions_en": true,
+  "captions_fa": true,
+  "claim_matrix": true,
+  "asset_index": true,
+  "latex_fig_manifest": true,
+  "asset_sources": true
+}

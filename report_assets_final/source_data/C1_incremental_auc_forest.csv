@@ -1,0 +1,7 @@
+label,delta,lo,hi,p,reps,source
+"C - RGB embedding
+(+ 5 scalar biomarkers)",0.0010849801526706,-0.0016910161138639,0.0038684320209159,0.4313,10000,task7 paired_primary_metrics.csv
+"E - RGB embedding
+(+ spatial vessel representation)",0.007938221861095,0.0026295228146692,0.0131313433584046,0.0031,10000,task8b paired_metrics_10k.csv
+"G - E
+(+ 5 scalar biomarkers after vessel)",0.0020390073106504,-0.0002740485446069,0.0043967572169776,0.09,10000,task8b paired_metrics_10k.csv

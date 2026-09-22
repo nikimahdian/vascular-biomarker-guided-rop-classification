@@ -1,0 +1,7 @@
+panel,held_out_source,model,value
+3-class AUC,farfum_rop,K0,0.8329251289204936
+3-class AUC,farabi,K0,0.7919160162216142
+3-class AUC,farfum_rop,K1,0.8301291037805519
+3-class AUC,farabi,K1,0.7910328110577881
+restricted binary AUC,plus,K0,0.989322311359822
+restricted binary AUC,plus,K1,0.9898077712442588

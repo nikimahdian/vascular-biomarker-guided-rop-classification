@@ -1,0 +1,13 @@
+stage,detail
+RGB fundus,384x384
+RGB CNN,EfficientNet-B5 2048-d
+segmentation,frozen SEG_CURRENT_V2
+vessel map,binary 384x384
+vessel CNN,EfficientNet-B4 1792-d
+vascular measurement,FOV-aware
+5 biomarkers,"vessel_density_fov, skel_density_fov, fractal_d0/d1/d2"
+fusion,concatenation / joint / FiLM
+output,Normal / Pre-Plus / Plus
+canonical split,6203/1328/1331
+paired bootstrap,"seed 42, 10000 replicates"
+source-held-out,plus / FARFUM-RoP / Farabi
