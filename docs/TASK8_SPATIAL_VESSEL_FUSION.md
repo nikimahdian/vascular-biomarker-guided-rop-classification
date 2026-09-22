@@ -84,6 +84,11 @@ B_EMBEDDING_ONLY 0.924903, C_PRIMARY 0.925988.
 
 ## 5. Paired statistics — E vs B_EMBEDDING_ONLY (2,000 class-stratified bootstrap replicates)
 
+> **Provenance, not superseded.** These 2,000-replicate numbers are the numbers produced during the
+> original Task-8 run and are preserved exactly as written. Task 8B (§10) re-ran the same comparison
+> at 10,000 replicates under the identical protocol; §10 is the reporting reference, §5 stays as
+> provenance. Neither file was overwritten.
+
 | metric | delta E − B | 95% CI | p |
 |---|---|---|---|
 | multiclass AUC | **+0.007938** | [+0.002852, +0.013193] | **0.0010** |
@@ -139,3 +144,74 @@ after TEST was read.
 Key hashes: `d_selected.pth` `3e1719eb…`, `vessel_embeddings_b4_8862.parquet` `9c7aa91f…`,
 `e_rgb_vessel_feature_fusion.json` `8f524832…`, `g_rgb_vessel_scalar_fusion.json` `3a118f7f…`,
 `task8_summary.json` `a30e99a7…`.
+
+---
+
+## 10. Task 8B — statistical closure at 10,000 replicates
+
+**No model was trained, refit, tuned or recalibrated. No prediction table was replaced or modified.**
+Both the 2,000-replicate numbers in §5 and every Task-8 artifact are preserved unchanged; the Task-8B
+output lives in the new subdirectory `artifacts/task8_spatial_vessel_fusion/statistical_closure_10k/`.
+
+Protocol is copied from `scripts/task7_paired_statistics.py` verbatim: paired, class-stratified,
+seed 42, per-replicate RNG `default_rng(SEED * 1000003 + r)`, 40-replicate chunks over a 24-worker
+fork pool, percentile 2.5 / 97.5 CI, null-centered two-sided p = mean(|d − obs| >= |obs|), and the
+same `macro_auc` / `ece15` / `brier` / `balanced_accuracy_score` / `f1_score` implementations.
+N = 1,331; classes 982 / 140 / 209.
+
+Input verification before any statistic was computed: all seven frozen prediction CSVs hashed and
+matched against the Task-6 and Task-8 manifests — A `e560d8e0`, B `21f0e2f7`, C `63ef3a85`,
+D `a534344d`, E `ac9279ac`, F `21f0e2f7`, G `4e067e25`. All UNCHANGED.
+
+Note on F: its SHA equals B's exactly. With `alpha = 1.0` the late-fusion table is bit-identical to
+`B_EMBEDDING_ONLY`, which independently confirms the §3 finding that F collapsed to B.
+
+### 10.1 Primary comparison — E vs B_EMBEDDING_ONLY (10,000 replicates)
+
+| metric | delta E − B | 95% CI | p | crosses 0 |
+|---|---|---|---|---|
+| multiclass AUC | **+0.007938** | [+0.002630, +0.013131] | **0.0031** | no |
+| balanced accuracy | +0.011624 | [−0.011994, +0.034846] | 0.3278 | yes |
+| macro F1 | +0.015915 | [−0.006211, +0.037655] | 0.1530 | yes |
+| Brier | **−0.027693** | [−0.043954, −0.011471] | **0.0011** | no |
+| ECE | −0.010675 | [−0.026072, +0.003869] | 0.1642 | yes |
+
+The 10,000-replicate run reproduces the 2,000-replicate conclusion and tightens the intervals by
+roughly 30 %. AUC and Brier remain the only metrics whose paired CI excludes zero. Thresholded
+decision metrics and ECE remain unsupported.
+
+### 10.2 G vs E — do the five scalar biomarkers add anything on top of the spatial vessel map?
+
+| metric | delta G − E | 95% CI | p | crosses 0 |
+|---|---|---|---|---|
+| multiclass AUC | +0.002039 | [−0.000274, +0.004397] | 0.0900 | **yes (marginally)** |
+| balanced accuracy | +0.003846 | [−0.012053, +0.020061] | 0.6383 | yes |
+| macro F1 | +0.004592 | [−0.010536, +0.019581] | 0.5440 | yes |
+| Brier | −0.002075 | [−0.009236, +0.004947] | 0.5707 | yes |
+| ECE | −0.000063 | [−0.009202, +0.011057] | 0.9906 | yes |
+
+Answer to the pre-declared question: **no measurable incremental information.** Every CI crosses
+zero; the AUC interval misses by 0.000274 and its p of 0.090 does not survive any multiplicity
+consideration. Once the spatial vessel representation is already in the feature vector, the five
+FINAL_PRIMARY scalar biomarkers add nothing detectable.
+
+### 10.3 Point estimates (no CI — descriptive only)
+
+| comparison | AUC | bal acc | macro F1 | Brier | ECE |
+|---|---|---|---|---|---|
+| D_VESSEL_MAP vs A_PRIMARY | +0.177633 | +0.121536 | +0.154100 | −0.186248 | +0.029829 |
+| E vs B_EMBEDDING_ONLY | +0.007938 | +0.011624 | +0.015915 | −0.027693 | −0.010675 |
+| E vs C_PRIMARY | +0.006853 | +0.014632 | +0.015224 | −0.020438 | −0.006422 |
+| G vs E | +0.002039 | +0.003846 | +0.004592 | −0.002075 | −0.000063 |
+| G vs B_EMBEDDING_ONLY | +0.009977 | +0.015470 | +0.020507 | −0.029768 | −0.010738 |
+
+Two of these point estimates are worth stating carefully. D beats A_PRIMARY by a wide margin on
+every metric except ECE, which is the first direct evidence in this series that spatial vessel
+morphology carries more ROP-Plus signal than the tabular biomarker panel alone. And E's point
+advantage over C_PRIMARY (+0.006853 AUC) is of similar size to E's advantage over B_EMBEDDING_ONLY,
+but unlike the E − B comparison it has no paired CI here, so it is descriptive only.
+
+### 10.4 Status
+
+Classification unchanged: `SECONDARY_POST_PRIMARY_EXPLORATORY_CANONICAL_SPLIT_REANALYSIS`.
+No further experiment was started after this analysis.

@@ -1,0 +1,8 @@
+{
+  "bootstrap_distributions_E_minus_B.parquet": "37d761cdb5ad55f7d4dc3e467dcaa817f10437d191fd877ef8129d3339ebe281",
+  "bootstrap_distributions_G_minus_E.parquet": "c61f189f19c1eb26b49502d8303bfe7e15649be3d268b150da86d7654f608b20",
+  "paired_metrics_10k.csv": "abd94b6b146cd1eb6f4e6cc39770b1fc81183aed4da9ac2ee467698bf41997cc",
+  "point_estimates.csv": "ff587e074d8fcc22e1b3cc194b06952d598e4282d6f6bea72daeb05568c2eae9",
+  "run.log": "d6e4965a30b155798c93f4d1556c775f7336e574f6b846526fee24bc4df5de47",
+  "statistical_closure_summary.json": "f6168d00c305140ecdc5bd5df9d712675df52fda97709d13cd86a6eac082610b"
+}
