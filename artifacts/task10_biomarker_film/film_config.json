@@ -1,0 +1,8 @@
+{
+  "hidden": 64,
+  "dim": 512,
+  "gamma": "1 + 0.10*tanh(delta_gamma)",
+  "beta": "0.10*tanh(beta_raw)",
+  "form": "gamma*v + beta",
+  "init": "normal(0,0.01) weights, zero bias -> near identity"
+}

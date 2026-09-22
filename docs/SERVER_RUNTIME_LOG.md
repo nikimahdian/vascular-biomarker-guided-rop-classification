@@ -123,3 +123,38 @@ redirect sent to `train.log`. Re-hashing those two files therefore reports a mis
 nothing was altered — they are append-only execution logs of the very run that hashed them. Rule
 going forward: write the artifact SHA manifest as the absolute last action, after every log write,
 or leave logs out of the manifest.
+
+---
+
+## Task 10 — frozen biomarker-conditioned FiLM fusion (J0 / J1)
+
+Server 2, RTX 4090, script `task10_biomarker_film.py`. This task runs no CNN at all: both encoders
+exist only as frozen embedding tables (8862 x 2048 RGB, 8862 x 1792 vessel), so the whole chain -
+pre-flight, J0 training, selection, J1 training, selection, freeze, single TEST read, FiLM
+diagnostics, per-biomarker ablation, source breakdown, three 10,000-replicate paired bootstraps and
+figures - finished in **69 seconds**.
+
+Each epoch is 0.4-0.6 s: 6,203 samples at batch 128 is 49 optimizer steps over a 2.5 M-parameter
+MLP, and the validation pass is a single 1,328-row forward. There is no data-loader bottleneck and
+no GPU-capacity question; memory use is negligible. The 10,000-replicate bootstraps dominate the
+wall clock at ~18 s each.
+
+Overfitting is the same story as Task 9 but at the head level: train loss falls monotonically to
+0.046 while validation loss climbs from its epoch-1 minimum of 0.687 to 1.87. Freezing the encoders
+into precomputed features removed catastrophic encoder drift, but a 2.5 M-parameter head still has
+far more capacity than 6,203 samples support, and both models selected epoch 1.
+
+Two implementation notes worth keeping:
+
+* The matched-pair design has a subtle defect that was found by reading the code rather than the
+  results. `Fusion.__init__` builds the FiLM modules *before* `self.fuse`, so for J1 the extra
+  `nn.Linear` constructions consume RNG draws and the fusion MLP starts from different weights than
+  J0's. Architecture, data, seed, optimizer and batch order are identical, so the pairing holds for
+  everything except fusion-head initialisation. Because FiLM turned out empirically near-identity,
+  that difference is a sufficient explanation for the small J1-vs-J0 Brier gap, and the gap must not
+  be read as a biomarker effect. Fix for a future replication: re-seed immediately before building
+  the fusion MLP so both arms start bit-identically.
+* The Task-8/9 manifest-ordering problem was designed out here: `task10_progress.log` and `train.log`
+  are marked `EXCLUDED_APPEND_ONLY_LOG` in `artifact_sha256.json` instead of being hashed before the
+  final log write. Server-1/Server-2 equality is verified by direct cross-server hashing rather than
+  by trusting the manifest.

@@ -1,0 +1,95 @@
+{
+  "model": "J0_FROZEN_FUSION_CONTROL",
+  "use_film": false,
+  "selected_epoch": 1,
+  "val_auc": 0.9159125125777582,
+  "val_macro_f1": 0.671157923787454,
+  "val_loss": 0.6865743068327387,
+  "checkpoint_sha256": "3e1ebd55cf0c6b1e5fae4d6e873c2ad04ecf033992650c5274f8faec85013519",
+  "epochs_run": 9,
+  "parameters": 2520067,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.40410823700851956,
+      "val_loss": 0.6865743068327387,
+      "val_auc": 0.9159125125777582,
+      "val_macro_f1": 0.671157923787454,
+      "seconds": 0.96,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch1.pth"
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.2714758161386328,
+      "val_loss": 0.9169351939695427,
+      "val_auc": 0.9091585278114431,
+      "val_macro_f1": 0.6660152534476342,
+      "seconds": 0.43,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch2.pth"
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.20709754151623805,
+      "val_loss": 1.0451877016619027,
+      "val_auc": 0.908751711066823,
+      "val_macro_f1": 0.6284811621956687,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch3.pth"
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.18917583775447297,
+      "val_loss": 1.0576896753655858,
+      "val_auc": 0.9130661250320183,
+      "val_macro_f1": 0.6785780565308125,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch4.pth"
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.12609337820135047,
+      "val_loss": 1.32656135329281,
+      "val_auc": 0.9070892815783732,
+      "val_macro_f1": 0.6623058168094483,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch5.pth"
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.10705568807539816,
+      "val_loss": 1.5765267711087882,
+      "val_auc": 0.9038934347535875,
+      "val_macro_f1": 0.6297860796576392,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch6.pth"
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.09247143556879314,
+      "val_loss": 1.6594518983220479,
+      "val_auc": 0.8972137310085516,
+      "val_macro_f1": 0.6224776612094932,
+      "seconds": 0.45,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch7.pth"
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.05254474902165507,
+      "val_loss": 1.9064804128853672,
+      "val_auc": 0.9049145842870064,
+      "val_macro_f1": 0.658350486657663,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch8.pth"
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.04603963185779783,
+      "val_loss": 1.8710944710007633,
+      "val_auc": 0.9104781984068006,
+      "val_macro_f1": 0.6691395286024533,
+      "seconds": 0.44,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J0_FROZEN_FUSION_CONTROL_epoch9.pth"
+    }
+  ],
+  "test_touched": false
+}

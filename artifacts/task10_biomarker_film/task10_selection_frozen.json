@@ -1,0 +1,28 @@
+{
+  "TASK10_ALL_SELECTION_FROZEN": true,
+  "J0_checkpoint_sha256": "3e1ebd55cf0c6b1e5fae4d6e873c2ad04ecf033992650c5274f8faec85013519",
+  "J1_checkpoint_sha256": "330be575e07faa797e7a6d441d317fe033a32f5d101c743ec35572d34fd51b6e",
+  "J0_selected": {
+    "selected_epoch": 1,
+    "val_auc": 0.9159125125777582,
+    "val_macro_f1": 0.671157923787454,
+    "val_loss": 0.6865743068327387
+  },
+  "J1_selected": {
+    "selected_epoch": 1,
+    "val_auc": 0.9166970047930928,
+    "val_macro_f1": 0.6644209261926081,
+    "val_loss": 0.7145296234682382
+  },
+  "biomarker_scaler_sha256": "7e8d888feced3f34e8e750ca46f907cbd844484edee4c0da92d0f3518ba6648d",
+  "film_architecture": {
+    "hidden": 64,
+    "dim": 512,
+    "gamma": "1 + 0.10*tanh(delta_gamma)",
+    "beta": "0.10*tanh(beta_raw)",
+    "form": "gamma*v + beta",
+    "init": "normal(0,0.01) weights, zero bias -> near identity"
+  },
+  "no_cnn_parameters_in_optimizer": true,
+  "cnn_encoder_invoked": false
+}

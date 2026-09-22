@@ -1,0 +1,83 @@
+[
+  {
+    "epoch": 1,
+    "train_loss": 0.3987726704614616,
+    "val_loss": 0.7145296234682382,
+    "val_auc": 0.9166970047930928,
+    "val_macro_f1": 0.6644209261926081,
+    "seconds": 0.67,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch1.pth"
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.272766274184003,
+    "val_loss": 0.8900129335472383,
+    "val_auc": 0.9061068933783317,
+    "val_macro_f1": 0.649300407195144,
+    "seconds": 0.6,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch2.pth"
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.21204397267542327,
+    "val_loss": 0.9463742712894118,
+    "val_auc": 0.9098799644526765,
+    "val_macro_f1": 0.6498292169882195,
+    "seconds": 0.62,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch3.pth"
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.17447346861124538,
+    "val_loss": 1.2669666330498386,
+    "val_auc": 0.908652857437187,
+    "val_macro_f1": 0.6535843961746269,
+    "seconds": 0.62,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch4.pth"
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.14004887310166753,
+    "val_loss": 1.4423413707549313,
+    "val_auc": 0.910296101520644,
+    "val_macro_f1": 0.6439688248348271,
+    "seconds": 0.6,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch5.pth"
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.10993115399972712,
+    "val_loss": 2.0001587925187074,
+    "val_auc": 0.9062465704335345,
+    "val_macro_f1": 0.6164818561204515,
+    "seconds": 0.6,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch6.pth"
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.07884278469113175,
+    "val_loss": 1.5873579548065921,
+    "val_auc": 0.9035138434408642,
+    "val_macro_f1": 0.6318131840784166,
+    "seconds": 0.59,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch7.pth"
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.06457945293495103,
+    "val_loss": 1.9487135869910919,
+    "val_auc": 0.9030919895673332,
+    "val_macro_f1": 0.6382072844367095,
+    "seconds": 0.59,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch8.pth"
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.048198782824017086,
+    "val_loss": 1.8763818798294987,
+    "val_auc": 0.9112459707574883,
+    "val_macro_f1": 0.6712536604646999,
+    "seconds": 0.59,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task10_biomarker_film/J1_BIOMARKER_FILM_epoch9.pth"
+  }
+]
