@@ -1,0 +1,114 @@
+{
+  "model": "H_JOINT_RGB_VESSEL",
+  "selected_epoch": 4,
+  "selected_stage": 2,
+  "val_auc": 0.8842843596077407,
+  "val_macro_f1": 0.6044540976386971,
+  "val_loss": 1.3087634772762897,
+  "checkpoint_sha256": "7c0b6d2cc63f7f2f73fa1c1d4974a9eb7b9cb313b16c9f4c442ac8e1e59297c6",
+  "epochs_run": 10,
+  "use_bio": false,
+  "history": [
+    {
+      "epoch": 1,
+      "stage": 1,
+      "train_loss": 0.39255887765317854,
+      "val_loss": 0.9316310031298851,
+      "val_auc": 0.8642217875240198,
+      "val_macro_f1": 0.5847425367410256,
+      "seconds": 40.3,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage1_epoch1.pth"
+    },
+    {
+      "epoch": 2,
+      "stage": 1,
+      "train_loss": 0.33123675163990834,
+      "val_loss": 1.2947802221228428,
+      "val_auc": 0.8665741907975674,
+      "val_macro_f1": 0.5761045704663469,
+      "seconds": 37.5,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage1_epoch2.pth"
+    },
+    {
+      "epoch": 3,
+      "stage": 1,
+      "train_loss": 0.29204786465703414,
+      "val_loss": 1.2093559956537134,
+      "val_auc": 0.8460596217940375,
+      "val_macro_f1": 0.5749952508772637,
+      "seconds": 37.6,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage1_epoch3.pth"
+    },
+    {
+      "epoch": 4,
+      "stage": 2,
+      "train_loss": 0.2658109119245742,
+      "val_loss": 1.3087634772762897,
+      "val_auc": 0.8842843596077407,
+      "val_macro_f1": 0.6044540976386971,
+      "seconds": 63.6,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch4.pth"
+    },
+    {
+      "epoch": 5,
+      "stage": 2,
+      "train_loss": 0.23116176041522066,
+      "val_loss": 2.0687280269047164,
+      "val_auc": 0.8562171165657135,
+      "val_macro_f1": 0.49245721066623765,
+      "seconds": 64.5,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch5.pth"
+    },
+    {
+      "epoch": 6,
+      "stage": 2,
+      "train_loss": 0.1868682798156138,
+      "val_loss": 1.4510898226242235,
+      "val_auc": 0.8804784489327163,
+      "val_macro_f1": 0.5519043915470969,
+      "seconds": 65.7,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch6.pth"
+    },
+    {
+      "epoch": 7,
+      "stage": 2,
+      "train_loss": 0.15536704757368705,
+      "val_loss": 1.520378887705948,
+      "val_auc": 0.8726852349249916,
+      "val_macro_f1": 0.5350326406564822,
+      "seconds": 63.7,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch7.pth"
+    },
+    {
+      "epoch": 8,
+      "stage": 2,
+      "train_loss": 0.12230268520961887,
+      "val_loss": 1.4609613824433771,
+      "val_auc": 0.8796424111806566,
+      "val_macro_f1": 0.6017644233778056,
+      "seconds": 66.1,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch8.pth"
+    },
+    {
+      "epoch": 9,
+      "stage": 2,
+      "train_loss": 0.10740440515787048,
+      "val_loss": 1.8241122774347622,
+      "val_auc": 0.8720636349006105,
+      "val_macro_f1": 0.5409427557429518,
+      "seconds": 59.2,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch9.pth"
+    },
+    {
+      "epoch": 10,
+      "stage": 2,
+      "train_loss": 0.08136465399076089,
+      "val_loss": 2.8079380703011254,
+      "val_auc": 0.8408014226052507,
+      "val_macro_f1": 0.4952853475607255,
+      "seconds": 69.5,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/H_JOINT_RGB_VESSEL_stage2_epoch10.pth"
+    }
+  ],
+  "test_touched": false
+}

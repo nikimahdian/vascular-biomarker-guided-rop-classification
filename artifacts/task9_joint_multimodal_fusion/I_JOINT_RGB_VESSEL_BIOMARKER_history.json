@@ -1,0 +1,122 @@
+[
+  {
+    "epoch": 1,
+    "stage": 1,
+    "train_loss": 0.3817440069732638,
+    "val_loss": 1.0162147626653173,
+    "val_auc": 0.8693885085962324,
+    "val_macro_f1": 0.5940216585059905,
+    "seconds": 44.8,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage1_epoch1.pth"
+  },
+  {
+    "epoch": 2,
+    "stage": 1,
+    "train_loss": 0.338344854336486,
+    "val_loss": 1.4477427480734006,
+    "val_auc": 0.8521627212661945,
+    "val_macro_f1": 0.5625470390176273,
+    "seconds": 42.0,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage1_epoch2.pth"
+  },
+  {
+    "epoch": 3,
+    "stage": 1,
+    "train_loss": 0.2961241989155537,
+    "val_loss": 1.2360697304438106,
+    "val_auc": 0.8745922375610148,
+    "val_macro_f1": 0.5578381142473757,
+    "seconds": 44.5,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage1_epoch3.pth"
+  },
+  {
+    "epoch": 4,
+    "stage": 2,
+    "train_loss": 0.25712605881201883,
+    "val_loss": 1.0854606756593166,
+    "val_auc": 0.8773966423133469,
+    "val_macro_f1": 0.5933300715770582,
+    "seconds": 69.8,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch4.pth"
+  },
+  {
+    "epoch": 5,
+    "stage": 2,
+    "train_loss": 0.20984857736415735,
+    "val_loss": 1.1034931384773183,
+    "val_auc": 0.8843565852723873,
+    "val_macro_f1": 0.5932149939879409,
+    "seconds": 75.4,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch5.pth"
+  },
+  {
+    "epoch": 6,
+    "stage": 2,
+    "train_loss": 0.1785842705140854,
+    "val_loss": 1.1766636648841875,
+    "val_auc": 0.8884681334482556,
+    "val_macro_f1": 0.6047705920000367,
+    "seconds": 69.8,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch6.pth"
+  },
+  {
+    "epoch": 7,
+    "stage": 2,
+    "train_loss": 0.13811200713342728,
+    "val_loss": 1.436721079794519,
+    "val_auc": 0.8867239615526882,
+    "val_macro_f1": 0.5678714463652664,
+    "seconds": 60.5,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch7.pth"
+  },
+  {
+    "epoch": 8,
+    "stage": 2,
+    "train_loss": 0.12650470115819729,
+    "val_loss": 1.8790799319771017,
+    "val_auc": 0.87146001011691,
+    "val_macro_f1": 0.5454464827933663,
+    "seconds": 64.8,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch8.pth"
+  },
+  {
+    "epoch": 9,
+    "stage": 2,
+    "train_loss": 0.09154794781468283,
+    "val_loss": 2.0957949777771208,
+    "val_auc": 0.8612866745238899,
+    "val_macro_f1": 0.5103169198276177,
+    "seconds": 69.2,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch9.pth"
+  },
+  {
+    "epoch": 10,
+    "stage": 2,
+    "train_loss": 0.09139573722560915,
+    "val_loss": 1.7132011734667867,
+    "val_auc": 0.8521439349957207,
+    "val_macro_f1": 0.5533426336112989,
+    "seconds": 64.7,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch10.pth"
+  },
+  {
+    "epoch": 11,
+    "stage": 2,
+    "train_loss": 0.0839812903893295,
+    "val_loss": 1.5166364408885191,
+    "val_auc": 0.8738147965036833,
+    "val_macro_f1": 0.5430724838317741,
+    "seconds": 67.4,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch11.pth"
+  },
+  {
+    "epoch": 12,
+    "stage": 2,
+    "train_loss": 0.058311810108128706,
+    "val_loss": 2.3971193586399253,
+    "val_auc": 0.8538865372222529,
+    "val_macro_f1": 0.5293217724150521,
+    "seconds": 68.1,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task9_joint_multimodal_fusion/I_JOINT_RGB_VESSEL_BIOMARKER_stage2_epoch12.pth"
+  }
+]

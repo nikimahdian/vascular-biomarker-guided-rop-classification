@@ -1,0 +1,24 @@
+{
+  "TASK9_ALL_SELECTION_FROZEN": true,
+  "H_checkpoint_sha256": "7c0b6d2cc63f7f2f73fa1c1d4974a9eb7b9cb313b16c9f4c442ac8e1e59297c6",
+  "I_checkpoint_sha256": "001a2e91b95503eaf2b327d228ed417d2baa35e9a4e02dbfe95ee0cab59b9446",
+  "H_selected": {
+    "selected_epoch": 4,
+    "selected_stage": 2,
+    "val_auc": 0.8842843596077407,
+    "val_macro_f1": 0.6044540976386971,
+    "val_loss": 1.3087634772762897
+  },
+  "I_selected": {
+    "selected_epoch": 6,
+    "selected_stage": 2,
+    "val_auc": 0.8884681334482556,
+    "val_macro_f1": 0.6047705920000367,
+    "val_loss": 1.1766636648841875
+  },
+  "biomarker_scaler_sha256": "7e8d888feced3f34e8e750ca46f907cbd844484edee4c0da92d0f3518ba6648d",
+  "architecture_frozen": true,
+  "ensemble_executed": false,
+  "ensemble_declaration": "section 17 not executed: runtime was not low enough to add a 3-seed ensemble after H and I",
+  "bf16_autocast_used": true
+}

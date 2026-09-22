@@ -84,3 +84,42 @@ Two operational notes worth keeping:
   invoking shell itself.
 
 Server 1 was used only as the artifact sink for this task; no training ran on the Mac.
+
+---
+
+## Task 9 — joint RGB-vessel learned fusion (H / I)
+
+Server 2, RTX 4090, isolated workspace `/root/niki_rop_task6_isolated`, script
+`task9_joint_fusion.py`, `nohup` under the project venv. Whole chain (pre-flight -> H training ->
+selection -> I training -> selection -> freeze -> single TEST read -> 4 x 10,000-replicate paired
+bootstrap -> figures -> SHA manifest) finished in 1,418 s wall, about 24 minutes.
+
+Throughput: 40.3 s per stage-1 epoch for H, rising to 60-70 s per stage-2 epoch once the encoder
+tails became trainable (gradients through the last two EfficientNet blocks of both a B5 and a B4).
+GPU memory peaked around 4.1 GiB of 24,564 MiB at batch 16, so the frozen batch size was never a
+constraint and was left alone. CUDA bfloat16 autocast was active throughout
+(`torch.cuda.is_bf16_supported()` is True on this driver) and no loss scaling was needed.
+
+Both H and I ran to early stop: H 10 epochs, I 12 epochs. Validation loss was lowest at epoch 1 for
+both, i.e. before any encoder was unfrozen, and validation AUC peaked two epochs after unfreezing
+and then decayed while training loss kept falling monotonically. This is the same overfitting
+pattern Task-8 model D showed, reproduced harder with two encoders.
+
+Two operational notes:
+
+* The interrupted-network failure mode from Task 8B recurred once: an `ssh` call timed out at
+  connect and the upload never happened. Re-running with an explicit `ConnectTimeout=30` and
+  checking `$LASTEXITCODE` before the next chained step caught it immediately; the retry succeeded
+  and the script was compiled with `py_compile` on the server before launch.
+* The `JointDS.__getitem__` path draws the geometric augmentation exactly once per sample and
+  applies the identical crop box, flip flag and rotation angle to the RGB image and the mask, with
+  BILINEAR for RGB and NEAREST for the mask. That is the only way to keep a mask registered to its
+  image; a second independent draw would silently misalign vascular morphology from appearance.
+
+**Manifest timing lesson (found while auditing Task 8 during Task 9).** In the original Task-8 run
+the SHA manifest was computed before the process wrote its final two lines: the
+`TASK8_STATUS = COMPLETE` entry in `task8_progress.log` and the metric echo that the `nohup`
+redirect sent to `train.log`. Re-hashing those two files therefore reports a mismatch even though
+nothing was altered — they are append-only execution logs of the very run that hashed them. Rule
+going forward: write the artifact SHA manifest as the absolute last action, after every log write,
+or leave logs out of the manifest.
