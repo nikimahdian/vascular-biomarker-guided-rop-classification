@@ -1,0 +1,43 @@
+[
+  {
+    "held_out": "plus",
+    "train_sources": [
+      "farfum_rop",
+      "farabi"
+    ],
+    "n_train": 2937,
+    "n_heldout": 5925,
+    "heldout_classes": [
+      0,
+      2
+    ]
+  },
+  {
+    "held_out": "farfum_rop",
+    "train_sources": [
+      "plus",
+      "farabi"
+    ],
+    "n_train": 7334,
+    "n_heldout": 1528,
+    "heldout_classes": [
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "held_out": "farabi",
+    "train_sources": [
+      "plus",
+      "farfum_rop"
+    ],
+    "n_train": 7453,
+    "n_heldout": 1409,
+    "heldout_classes": [
+      0,
+      1,
+      2
+    ]
+  }
+]

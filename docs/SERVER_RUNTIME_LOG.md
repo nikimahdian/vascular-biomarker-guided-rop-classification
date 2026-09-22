@@ -158,3 +158,34 @@ Two implementation notes worth keeping:
   are marked `EXCLUDED_APPEND_ONLY_LOG` in `artifact_sha256.json` instead of being hashed before the
   final log write. Server-1/Server-2 equality is verified by direct cross-server hashing rather than
   by trusting the manifest.
+
+---
+
+## Task 11 — source-held-out (LOSO) baseline
+
+Server 2, CPU only, script `task11_source_heldout.py`, nine XGBoost fits (3 folds x B/E/G) over the
+frozen 2048-d RGB and 1792-d vessel embeddings. Whole chain - pre-flight, three folds, six
+10,000-replicate paired bootstraps, shift diagnostics, biomarker shift, figures - finished in
+**542 seconds**.
+
+Cost profile: a B_LOSO fit (2048 features) is ~26 s, an E_LOSO or G_LOSO fit (3840/3845 features)
+is ~50-65 s with `n_jobs=16` and `tree_method=hist`. The largest fold trains on 7,453 rows. The
+paired bootstraps dominate again at ~33 s each because `multiclass_auc` is recomputed on every
+replicate.
+
+Two things the folds forced into the open:
+
+* The `plus` fold is not a three-class problem. That source has 5,925 images of which 5,304 are
+  Normal and 621 are Plus, and it contains **zero** Pre_Plus. The script returns NaN for the
+  three-class macro AUC there rather than substituting a two-class value, computes balanced accuracy
+  and macro F1 over the classes actually present, and reports a separately labelled
+  Normal-vs-Plus restricted AUC. Its 3-column Brier is inflated by a structurally empty Pre_Plus
+  column, so a renormalised two-class Brier is reported alongside it.
+* Every fold's training set does contain all three classes even though `plus` does not, because
+  farabi and farfum_rop each carry Pre_Plus. The script asserts this before fitting so that a fold
+  can never silently fall back to a two-class XGBoost objective.
+
+The `plus` held-out row in the degradation table is the one number in this task that is easy to
+misread: restricted two-class AUC on an 89.5 % Normal test set is numerically *higher* than the
+canonical 0.93, which says nothing about transfer quality. It measures a different task and is
+labelled as such everywhere it appears.
