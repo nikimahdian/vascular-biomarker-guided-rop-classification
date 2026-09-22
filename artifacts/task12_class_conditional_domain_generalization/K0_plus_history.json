@@ -1,0 +1,122 @@
+[
+  {
+    "class": 0.9096024304628372,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.005930244984247022,
+    "epoch": 1,
+    "val_loss": 0.6684247255325317,
+    "val_auc": 0.8663018110915034,
+    "val_macro_f1": 0.6894029632481787,
+    "seconds": 0.5,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch1.pth"
+  },
+  {
+    "class": 0.7195983231067657,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.018230745848421402,
+    "epoch": 2,
+    "val_loss": 0.5933669209480286,
+    "val_auc": 0.8867508100466822,
+    "val_macro_f1": 0.7206511214107959,
+    "seconds": 0.11,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch2.pth"
+  },
+  {
+    "class": 0.6551419198513031,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.029986554904116496,
+    "epoch": 3,
+    "val_loss": 0.5837306380271912,
+    "val_auc": 0.8972524773265184,
+    "val_macro_f1": 0.7198132649255825,
+    "seconds": 0.12,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch3.pth"
+  },
+  {
+    "class": 0.6212918519973755,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.04089804600374973,
+    "epoch": 4,
+    "val_loss": 0.5851417183876038,
+    "val_auc": 0.8980564127602708,
+    "val_macro_f1": 0.7291797145362966,
+    "seconds": 0.14,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch4.pth"
+  },
+  {
+    "class": 0.5560816675424576,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.05075428466750783,
+    "epoch": 5,
+    "val_loss": 0.5975834727287292,
+    "val_auc": 0.8967704488468673,
+    "val_macro_f1": 0.7379150291524158,
+    "seconds": 0.15,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch5.pth"
+  },
+  {
+    "class": 0.5378478094935417,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.059440981787931634,
+    "epoch": 6,
+    "val_loss": 0.6311277747154236,
+    "val_auc": 0.8842003613320465,
+    "val_macro_f1": 0.7128656067978368,
+    "seconds": 0.15,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch6.pth"
+  },
+  {
+    "class": 0.5125895455479622,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.06693236155986663,
+    "epoch": 7,
+    "val_loss": 0.6496193408966064,
+    "val_auc": 0.880566395529482,
+    "val_macro_f1": 0.7193525769581918,
+    "seconds": 0.14,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch7.pth"
+  },
+  {
+    "class": 0.4808690592646599,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.07327270793661024,
+    "epoch": 8,
+    "val_loss": 0.671894371509552,
+    "val_auc": 0.8825528683961877,
+    "val_macro_f1": 0.7085074583892811,
+    "seconds": 0.15,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch8.pth"
+  },
+  {
+    "class": 0.44171573519706725,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.07855407673114208,
+    "epoch": 9,
+    "val_loss": 0.686264157295227,
+    "val_auc": 0.8758923708665355,
+    "val_macro_f1": 0.7209507521077846,
+    "seconds": 0.15,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch9.pth"
+  },
+  {
+    "class": 0.42497705221176146,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.08289524190665037,
+    "epoch": 10,
+    "val_loss": 0.6945556998252869,
+    "val_auc": 0.8707277977654009,
+    "val_macro_f1": 0.7171170210846656,
+    "seconds": 0.15,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_plus_epoch10.pth"
+  }
+]

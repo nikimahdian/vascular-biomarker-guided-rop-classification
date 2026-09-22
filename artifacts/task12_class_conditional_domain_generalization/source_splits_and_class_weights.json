@@ -1,0 +1,346 @@
+{
+  "plus": {
+    "held_out": "plus",
+    "train_sources": [
+      "farfum_rop",
+      "farabi"
+    ],
+    "n_opt_train": 2530,
+    "n_source_val": 407,
+    "class_weights": {
+      "Normal": 0.8518518518518519,
+      "Pre_Plus": 1.0607966457023061,
+      "Plus": 1.1319910514541387
+    },
+    "source_val_class_counts": {
+      "0": 159,
+      "1": 135,
+      "2": 113
+    },
+    "per_source_class_available": {
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_opt_train": {
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_source_val": {
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "split": [
+      {
+        "held_out": "plus",
+        "source": "farfum_rop",
+        "class": "Normal",
+        "groups": 35,
+        "val_groups": 5,
+        "train_rows": 678,
+        "val_rows": 102,
+        "note": "ok"
+      },
+      {
+        "held_out": "plus",
+        "source": "farfum_rop",
+        "class": "Pre_Plus",
+        "groups": 21,
+        "val_groups": 3,
+        "train_rows": 418,
+        "val_rows": 60,
+        "note": "ok"
+      },
+      {
+        "held_out": "plus",
+        "source": "farfum_rop",
+        "class": "Plus",
+        "groups": 15,
+        "val_groups": 2,
+        "train_rows": 234,
+        "val_rows": 36,
+        "note": "ok"
+      },
+      {
+        "held_out": "plus",
+        "source": "farabi",
+        "class": "Normal",
+        "groups": 57,
+        "val_groups": 9,
+        "train_rows": 312,
+        "val_rows": 57,
+        "note": "ok"
+      },
+      {
+        "held_out": "plus",
+        "source": "farabi",
+        "class": "Pre_Plus",
+        "groups": 81,
+        "val_groups": 12,
+        "train_rows": 377,
+        "val_rows": 75,
+        "note": "ok"
+      },
+      {
+        "held_out": "plus",
+        "source": "farabi",
+        "class": "Plus",
+        "groups": 70,
+        "val_groups": 10,
+        "train_rows": 511,
+        "val_rows": 77,
+        "note": "ok"
+      }
+    ],
+    "two_domains_only": true
+  },
+  "farfum_rop": {
+    "held_out": "farfum_rop",
+    "train_sources": [
+      "plus",
+      "farabi"
+    ],
+    "n_opt_train": 6215,
+    "n_source_val": 1119,
+    "class_weights": {
+      "Normal": 0.4327693057586519,
+      "Pre_Plus": 5.244725738396625,
+      "Plus": 2.0054856405292028
+    },
+    "source_val_class_counts": {
+      "0": 886,
+      "2": 176,
+      "1": 57
+    },
+    "per_source_class_available": {
+      "plus": [
+        0,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_opt_train": {
+      "plus": [
+        0,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_source_val": {
+      "plus": [
+        0,
+        2
+      ],
+      "farabi": [
+        0,
+        1,
+        2
+      ]
+    },
+    "split": [
+      {
+        "held_out": "farfum_rop",
+        "source": "plus",
+        "class": "Normal",
+        "groups": 185,
+        "val_groups": 28,
+        "train_rows": 4507,
+        "val_rows": 797,
+        "note": "ok"
+      },
+      {
+        "held_out": "farfum_rop",
+        "source": "plus",
+        "class": "Pre_Plus",
+        "groups": 0,
+        "val_groups": 0,
+        "note": "class absent"
+      },
+      {
+        "held_out": "farfum_rop",
+        "source": "plus",
+        "class": "Plus",
+        "groups": 3,
+        "val_groups": 1,
+        "train_rows": 543,
+        "val_rows": 78,
+        "note": "ok"
+      },
+      {
+        "held_out": "farfum_rop",
+        "source": "farabi",
+        "class": "Normal",
+        "groups": 57,
+        "val_groups": 9,
+        "train_rows": 280,
+        "val_rows": 89,
+        "note": "ok"
+      },
+      {
+        "held_out": "farfum_rop",
+        "source": "farabi",
+        "class": "Pre_Plus",
+        "groups": 81,
+        "val_groups": 12,
+        "train_rows": 395,
+        "val_rows": 57,
+        "note": "ok"
+      },
+      {
+        "held_out": "farfum_rop",
+        "source": "farabi",
+        "class": "Plus",
+        "groups": 70,
+        "val_groups": 10,
+        "train_rows": 490,
+        "val_rows": 98,
+        "note": "ok"
+      }
+    ],
+    "two_domains_only": true
+  },
+  "farabi": {
+    "held_out": "farabi",
+    "train_sources": [
+      "plus",
+      "farfum_rop"
+    ],
+    "n_opt_train": 6318,
+    "n_source_val": 1135,
+    "class_weights": {
+      "Normal": 0.41012658227848103,
+      "Pre_Plus": 5.441860465116279,
+      "Plus": 2.6457286432160805
+    },
+    "source_val_class_counts": {
+      "0": 949,
+      "2": 95,
+      "1": 91
+    },
+    "per_source_class_available": {
+      "plus": [
+        0,
+        2
+      ],
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_opt_train": {
+      "plus": [
+        0,
+        2
+      ],
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ]
+    },
+    "per_source_class_source_val": {
+      "plus": [
+        0,
+        2
+      ],
+      "farfum_rop": [
+        0,
+        1,
+        2
+      ]
+    },
+    "split": [
+      {
+        "held_out": "farabi",
+        "source": "plus",
+        "class": "Normal",
+        "groups": 185,
+        "val_groups": 28,
+        "train_rows": 4507,
+        "val_rows": 797,
+        "note": "ok"
+      },
+      {
+        "held_out": "farabi",
+        "source": "plus",
+        "class": "Pre_Plus",
+        "groups": 0,
+        "val_groups": 0,
+        "note": "class absent"
+      },
+      {
+        "held_out": "farabi",
+        "source": "plus",
+        "class": "Plus",
+        "groups": 3,
+        "val_groups": 1,
+        "train_rows": 543,
+        "val_rows": 78,
+        "note": "ok"
+      },
+      {
+        "held_out": "farabi",
+        "source": "farfum_rop",
+        "class": "Normal",
+        "groups": 35,
+        "val_groups": 5,
+        "train_rows": 628,
+        "val_rows": 152,
+        "note": "ok"
+      },
+      {
+        "held_out": "farabi",
+        "source": "farfum_rop",
+        "class": "Pre_Plus",
+        "groups": 21,
+        "val_groups": 3,
+        "train_rows": 387,
+        "val_rows": 91,
+        "note": "ok"
+      },
+      {
+        "held_out": "farabi",
+        "source": "farfum_rop",
+        "class": "Plus",
+        "groups": 15,
+        "val_groups": 2,
+        "train_rows": 253,
+        "val_rows": 17,
+        "note": "ok"
+      }
+    ],
+    "two_domains_only": true
+  }
+}

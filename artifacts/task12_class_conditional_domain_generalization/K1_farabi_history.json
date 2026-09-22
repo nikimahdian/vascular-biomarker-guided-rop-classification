@@ -1,0 +1,110 @@
+[
+  {
+    "class": 0.5221462041139603,
+    "domain": 0.5775433987379074,
+    "mmd": 0.12264007195830345,
+    "alpha": 0.006112472730175137,
+    "epoch": 1,
+    "val_loss": 0.3650349974632263,
+    "val_auc": 0.9569435997234009,
+    "val_macro_f1": 0.747473909307942,
+    "seconds": 2.01,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch1.pth"
+  },
+  {
+    "class": 0.28011882334947585,
+    "domain": 0.32004173487424853,
+    "mmd": 0.11503964513540268,
+    "alpha": 0.0183984347388722,
+    "epoch": 2,
+    "val_loss": 0.37934157252311707,
+    "val_auc": 0.96220017631489,
+    "val_macro_f1": 0.7480481332602728,
+    "seconds": 1.99,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch2.pth"
+  },
+  {
+    "class": 0.21420713692903517,
+    "domain": 0.21828933238983153,
+    "mmd": 0.10571077018976212,
+    "alpha": 0.030135854842256258,
+    "epoch": 3,
+    "val_loss": 0.36029961705207825,
+    "val_auc": 0.9649016360727121,
+    "val_macro_f1": 0.7720613899699588,
+    "seconds": 1.96,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch3.pth"
+  },
+  {
+    "class": 0.16991074055433272,
+    "domain": 0.24110115438699722,
+    "mmd": 0.09774337351322174,
+    "alpha": 0.04102683760820641,
+    "epoch": 4,
+    "val_loss": 0.4152314066886902,
+    "val_auc": 0.9615958891859556,
+    "val_macro_f1": 0.7784525583705911,
+    "seconds": 1.94,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch4.pth"
+  },
+  {
+    "class": 0.12903298079967498,
+    "domain": 0.38172505974769594,
+    "mmd": 0.08457213014364243,
+    "alpha": 0.050862140440103995,
+    "epoch": 5,
+    "val_loss": 0.5001980066299438,
+    "val_auc": 0.9585100777905128,
+    "val_macro_f1": 0.7798210740813777,
+    "seconds": 1.96,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch5.pth"
+  },
+  {
+    "class": 0.0930484265089035,
+    "domain": 0.6064253944158554,
+    "mmd": 0.08114832520484924,
+    "alpha": 0.05952886837218477,
+    "epoch": 6,
+    "val_loss": 0.6216397285461426,
+    "val_auc": 0.9486877275032543,
+    "val_macro_f1": 0.7648703016561434,
+    "seconds": 2.03,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch6.pth"
+  },
+  {
+    "class": 0.07451309770345688,
+    "domain": 0.6151056587696075,
+    "mmd": 0.08534584015607834,
+    "alpha": 0.06700220892587656,
+    "epoch": 7,
+    "val_loss": 0.6313488483428955,
+    "val_auc": 0.9515267754460904,
+    "val_macro_f1": 0.7662931365826674,
+    "seconds": 2.05,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch7.pth"
+  },
+  {
+    "class": 0.062145846262574196,
+    "domain": 0.612186883687973,
+    "mmd": 0.08568514958024025,
+    "alpha": 0.0733269679668222,
+    "epoch": 8,
+    "val_loss": 0.7124752402305603,
+    "val_auc": 0.9517948607215341,
+    "val_macro_f1": 0.7574012550756737,
+    "seconds": 1.99,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch8.pth"
+  },
+  {
+    "class": 0.051586220413446425,
+    "domain": 0.6065204465389251,
+    "mmd": 0.09037363797426223,
+    "alpha": 0.07859535413757232,
+    "epoch": 9,
+    "val_loss": 0.7425482869148254,
+    "val_auc": 0.950269190193812,
+    "val_macro_f1": 0.7401634757159128,
+    "seconds": 1.98,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K1_farabi_epoch9.pth"
+  }
+]

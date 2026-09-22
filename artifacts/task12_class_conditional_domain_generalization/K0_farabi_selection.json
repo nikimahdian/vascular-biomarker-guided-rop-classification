@@ -1,0 +1,121 @@
+{
+  "kind": "K0",
+  "held_out": "farabi",
+  "selected_epoch": 3,
+  "val_auc": 0.9654796214311654,
+  "val_macro_f1": 0.7740890449746957,
+  "val_loss": 0.3467777669429779,
+  "checkpoint_sha256": "2eb16747c447383fd16a1ffa73123cbc10e340ead08c5fce73faa4b5675d7380",
+  "epochs_run": 9,
+  "history": [
+    {
+      "class": 0.5234098345041275,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.006112472730175137,
+      "epoch": 1,
+      "val_loss": 0.36158108711242676,
+      "val_auc": 0.9565436080708859,
+      "val_macro_f1": 0.7533958320398998,
+      "seconds": 0.37,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch1.pth"
+    },
+    {
+      "class": 0.28222942143678664,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.0183984347388722,
+      "epoch": 2,
+      "val_loss": 0.3668672442436218,
+      "val_auc": 0.9623731605750199,
+      "val_macro_f1": 0.744253672442551,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch2.pth"
+    },
+    {
+      "class": 0.2164149558544159,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.030135854842256258,
+      "epoch": 3,
+      "val_loss": 0.3467777669429779,
+      "val_auc": 0.9654796214311654,
+      "val_macro_f1": 0.7740890449746957,
+      "seconds": 0.37,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch3.pth"
+    },
+    {
+      "class": 0.17210890963673592,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.04102683760820641,
+      "epoch": 4,
+      "val_loss": 0.41458478569984436,
+      "val_auc": 0.9608499331340621,
+      "val_macro_f1": 0.7678573251565952,
+      "seconds": 0.37,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch4.pth"
+    },
+    {
+      "class": 0.12182788148522378,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.050862140440103995,
+      "epoch": 5,
+      "val_loss": 0.4483945667743683,
+      "val_auc": 0.9625638842161607,
+      "val_macro_f1": 0.7821847802812285,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch5.pth"
+    },
+    {
+      "class": 0.08963116772472858,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.05952886837218477,
+      "epoch": 6,
+      "val_loss": 0.5280104279518127,
+      "val_auc": 0.9554403588410852,
+      "val_macro_f1": 0.763873346236449,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch6.pth"
+    },
+    {
+      "class": 0.06960974410176277,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.06700220892587656,
+      "epoch": 7,
+      "val_loss": 0.5410579442977905,
+      "val_auc": 0.9572018791241362,
+      "val_macro_f1": 0.7638350367656015,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch7.pth"
+    },
+    {
+      "class": 0.05578638833016157,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.0733269679668222,
+      "epoch": 8,
+      "val_loss": 0.6034024357795715,
+      "val_auc": 0.9571560040540996,
+      "val_macro_f1": 0.7577465778794342,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch8.pth"
+    },
+    {
+      "class": 0.04376893483102322,
+      "domain": 0.0,
+      "mmd": 0.0,
+      "alpha": 0.07859535413757232,
+      "epoch": 9,
+      "val_loss": 0.7620962262153625,
+      "val_auc": 0.9515778087502218,
+      "val_macro_f1": 0.7303172828442288,
+      "seconds": 0.38,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farabi_epoch9.pth"
+    }
+  ],
+  "heldout_target_touched": false
+}

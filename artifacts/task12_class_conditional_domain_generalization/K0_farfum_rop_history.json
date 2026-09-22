@@ -1,0 +1,110 @@
+[
+  {
+    "class": 0.6088659520051918,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.006109995452624909,
+    "epoch": 1,
+    "val_loss": 0.40817058086395264,
+    "val_auc": 0.9599273358859661,
+    "val_macro_f1": 0.7482545119371933,
+    "seconds": 0.38,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch1.pth"
+  },
+  {
+    "class": 0.423848312728259,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.01839615538337784,
+    "epoch": 2,
+    "val_loss": 0.38678649067878723,
+    "val_auc": 0.9638139585064177,
+    "val_macro_f1": 0.7590197351704558,
+    "seconds": 0.35,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch2.pth"
+  },
+  {
+    "class": 0.3513996138864634,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.030133825612583053,
+    "epoch": 3,
+    "val_loss": 0.3847382962703705,
+    "val_auc": 0.9646602355969106,
+    "val_macro_f1": 0.7560975671336502,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch3.pth"
+  },
+  {
+    "class": 0.30317919534079885,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.04102508719761333,
+    "epoch": 4,
+    "val_loss": 0.4019973874092102,
+    "val_auc": 0.9640889488489407,
+    "val_macro_f1": 0.7505772726201888,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch4.pth"
+  },
+  {
+    "class": 0.2525949386917815,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.050860674576608714,
+    "epoch": 5,
+    "val_loss": 0.46623140573501587,
+    "val_auc": 0.9618847129622536,
+    "val_macro_f1": 0.7263596132477073,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch5.pth"
+  },
+  {
+    "class": 0.19497752007173033,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.059527673870541926,
+    "epoch": 6,
+    "val_loss": 0.5296056866645813,
+    "val_auc": 0.9628822213109203,
+    "val_macro_f1": 0.7095017810408509,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch6.pth"
+  },
+  {
+    "class": 0.14984743966131794,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.06700125953842179,
+    "epoch": 7,
+    "val_loss": 0.5857361555099487,
+    "val_auc": 0.9633302553960895,
+    "val_macro_f1": 0.7165065196050269,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch7.pth"
+  },
+  {
+    "class": 0.12196134380540069,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.07332623037344921,
+    "epoch": 8,
+    "val_loss": 0.6840626001358032,
+    "val_auc": 0.9631439052354955,
+    "val_macro_f1": 0.7106710671067108,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch8.pth"
+  },
+  {
+    "class": 0.09890739460076604,
+    "domain": 0.0,
+    "mmd": 0.0,
+    "alpha": 0.07859479295214788,
+    "epoch": 9,
+    "val_loss": 0.7782925963401794,
+    "val_auc": 0.9623942959325165,
+    "val_macro_f1": 0.6930492639251691,
+    "seconds": 0.36,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task12_class_conditional_domain_generalization/K0_farfum_rop_epoch9.pth"
+  }
+]

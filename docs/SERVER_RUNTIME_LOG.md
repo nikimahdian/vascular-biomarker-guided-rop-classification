@@ -189,3 +189,29 @@ The `plus` held-out row in the degradation table is the one number in this task 
 misread: restricted two-class AUC on an 89.5 % Normal test set is numerically *higher* than the
 canonical 0.93, which says nothing about transfer quality. It measures a different task and is
 labelled as such everywhere it appears.
+
+---
+
+## Task 12 — class-conditional domain-invariant RGB-vessel representation (K0 / K1)
+
+Server 2, RTX 4090, scripts `task12_cc_domain.py` (training) and `task12_eval_frozen.py` (held-out
+evaluation pass). Frozen 3840-d input, no CNN, no biomarkers. Six models trained (3 folds x K0/K1)
+in **62 seconds** - a 128-sample batch through the small MLP is ~0.02 s, so an epoch is 0.1 s for K0
+and 0.9-2.0 s for K1, the extra time being the discriminator and the four-kernel MMD over up to
+three classes. Evaluation, six 10,000-replicate bootstraps and figures added another 105 s.
+
+The architecture was deliberately shrunk after Tasks 9 and 10 (256-d projections, 256-d shared
+representation, a 3-way linear classifier) and that reduced the parameter count by roughly two
+orders of magnitude against Task 9. Both models still selected an early checkpoint (epoch 3-4 of
+about 10) and the source-validation-to-held-out AUC gap stayed large, so capacity was not the whole
+story behind the earlier overfitting.
+
+**A crash and how it was handled.** The first run trained and selected all six models, wrote
+`task12_selection_frozen.json` with `HELDOUT_TARGETS_TOUCHED = NO`, and then died during held-out
+evaluation with `KeyError: 2`. The cause was a stale loop variable: `pr[f"{kind}_{c}"]` reused `c`
+from an earlier `for c in (0, 1, 2)` loop instead of a class name. The correct response was *not* to
+retrain. A separate script `task12_eval_frozen.py` re-verifies all six checkpoint SHA-256 values
+against the freeze manifest and then performs only evaluation, statistics and figures. All six
+matched; nothing was retrained and no parameter was reselected. Worth remembering: a crash after the
+freeze does not licence a fresh training run, and keeping checkpoints plus a hash manifest is what
+makes a verify-only recovery possible.
