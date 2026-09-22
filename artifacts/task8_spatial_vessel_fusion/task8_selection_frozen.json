@@ -1,0 +1,24 @@
+{
+  "TASK8_ALL_SELECTION_FROZEN": true,
+  "D_checkpoint_sha256": "3e1719ebfa93d106be89c27a08f7974e0ec0f6cd4d6cc0b8f2bd140643ee5021",
+  "vessel_embeddings_sha256": "9c7aa91f3a45ae95404ecc123a64376fb8155804d38320e9e043d4f960cc9d91",
+  "E_params": {
+    "n_estimators": 500,
+    "max_depth": 3,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 1,
+    "reg_lambda": 1.0
+  },
+  "G_params": {
+    "n_estimators": 500,
+    "max_depth": 3,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 1,
+    "reg_lambda": 1.0
+  },
+  "F_alpha": 1.0
+}

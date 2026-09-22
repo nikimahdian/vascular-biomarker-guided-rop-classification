@@ -49,3 +49,38 @@ canvases. A task's cost is therefore set almost entirely by how many full `measu
 Everything ran on CPU. The GPU (60-core Metal) is only usable by the segmentation model, whose
 output — `SEG_CURRENT_V1` — is frozen and reused from disk in all of these tasks, so no GPU work was
 needed. Nothing here trains a model.
+
+---
+
+## Task 8 — two-server spatial vessel fusion (D / E / F / G)
+
+Server 2 (Ubuntu 24.04, RTX 4090 24,564 MiB, driver 580.65.06, torch 2.14.0+cu130), isolated
+workspace `/root/niki_rop_task6_isolated`. Script `task8_run.py` sha256
+`da78251a09333ff1ae09f61314973b3d2efc0721803f8f9931422b7b4a79b22c`, launched with `nohup` under
+the project venv. Whole chain (D training -> selection -> 8,862 vessel embeddings -> E -> G ->
+F alpha on VAL -> freeze -> single TEST read -> paired E-vs-B bootstrap) finished in 726 s wall.
+
+Throughput: EfficientNet-B4 mask branch at 52-57 s/epoch on 6,203 training masks (batch 16), i.e.
+the same order as the frozen B_RGB reference of 65.7 s/epoch on this GPU. `pfm-vllm.service` was
+inactive and the GPU was free (0 % util, 1 MiB) for the whole run; no OOM this time.
+
+The mask preflight is the important two-server fact: the Server-2 runtime manifest carries rewritten
+`image_path` values, and `mask_path` maps as `BASE2 + original_absolute_path` with
+`BASE2 = /root/niki_rop_task6_isolated/server1_data`. With that mapping, **0 of 8,862 masks were
+missing on Server 2**, so the D branch consumed exactly the same frozen
+`SEG_CURRENT_V2_RESOLVER_SAFE` masks as the canonical measurement pipeline.
+
+TEST was read once, only after `task8_selection_frozen.json` recorded `TASK8_ALL_SELECTION_FROZEN =
+YES` together with the D checkpoint hash, the vessel-embedding hash, the E/G learner config and the
+F alpha. `d_selection.json` carries `test_touched: false`.
+
+Two operational notes worth keeping:
+
+* The first launch died instantly because the output directory did not exist, so the shell could not
+  open `task8_spatial_vessel_fusion/train.log` for the `nohup` redirect. `mkdir -p` first, then
+  launch - the `nohup` redirect target must exist before the process starts.
+* `pgrep -fc "s2_runner[.]py"` returned 0 before launch, confirming no stale Task-6/7 runner was
+  holding GPU memory. The bracket pattern still matters: an unbracketed pattern matches the
+  invoking shell itself.
+
+Server 1 was used only as the artifact sink for this task; no training ran on the Mac.

@@ -1,0 +1,95 @@
+{
+  "selected_epoch": 3,
+  "val_auc": 0.8033444705471048,
+  "val_macro_f1": 0.535218384125791,
+  "val_loss": 0.7359510179025581,
+  "checkpoint_sha256": "3e1719ebfa93d106be89c27a08f7974e0ec0f6cd4d6cc0b8f2bd140643ee5021",
+  "epochs_run": 9,
+  "architecture": "efficientnet_b4",
+  "embedding_dim": 1792,
+  "seed": 42,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.8228125485435294,
+      "val_loss": 0.7691923724599632,
+      "val_auc": 0.7762852314489214,
+      "val_macro_f1": 0.48643050893432344,
+      "seconds": 56.5,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch1.pth"
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.6184908147206446,
+      "val_loss": 0.7690925328846437,
+      "val_auc": 0.7825048392226984,
+      "val_macro_f1": 0.5084909258977569,
+      "seconds": 54.6,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch2.pth"
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.53549873505545,
+      "val_loss": 0.7359510179025581,
+      "val_auc": 0.8033444705471048,
+      "val_macro_f1": 0.535218384125791,
+      "seconds": 52.4,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch3.pth"
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.46841270695304593,
+      "val_loss": 0.8112629203193159,
+      "val_auc": 0.7838605301342229,
+      "val_macro_f1": 0.4970224010201821,
+      "seconds": 50.9,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch4.pth"
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.4016303168863476,
+      "val_loss": 0.8643812774175621,
+      "val_auc": 0.7810410299696443,
+      "val_macro_f1": 0.48971952068539215,
+      "seconds": 53.9,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch5.pth"
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.33432603710140796,
+      "val_loss": 0.9775590882243881,
+      "val_auc": 0.7643846395142035,
+      "val_macro_f1": 0.48339256945383885,
+      "seconds": 52.3,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch6.pth"
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.2966782471911861,
+      "val_loss": 1.0484918847859623,
+      "val_auc": 0.7685086880981048,
+      "val_macro_f1": 0.5023433228838894,
+      "seconds": 51.9,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch7.pth"
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.2169655322411186,
+      "val_loss": 1.268032282590866,
+      "val_auc": 0.7854442485937124,
+      "val_macro_f1": 0.504089604836761,
+      "seconds": 52.4,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch8.pth"
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.16746889704103607,
+      "val_loss": 1.4383233225489238,
+      "val_auc": 0.7752231943967538,
+      "val_macro_f1": 0.48918716281729635,
+      "seconds": 53.3,
+      "ckpt": "/root/niki_rop_task6_isolated/artifacts/task8_spatial_vessel_fusion/d_epoch9.pth"
+    }
+  ],
+  "test_touched": false
+}
