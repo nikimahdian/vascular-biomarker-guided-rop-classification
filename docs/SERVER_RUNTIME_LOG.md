@@ -215,3 +215,42 @@ against the freeze manifest and then performs only evaluation, statistics and fi
 matched; nothing was retrained and no parameter was reselected. Worth remembering: a crash after the
 freeze does not licence a fresh training run, and keeping checkpoints plus a hash manifest is what
 makes a verify-only recovery possible.
+
+---
+
+## Task 13 — ROPDeepX-style dual-RGB soft attention (model L, M0, M1)
+
+Server 2, RTX 4090. Frozen 3840-d input was not used for L - this task trains CNNs again, the first
+time since Task 9. Whole chain (pre-flight, 7 epochs of L, selection, attention diagnostics,
+8,862-sample attended-embedding extraction, two XGBoost fits, single TEST read, four
+10,000-replicate paired bootstraps, figures) finished in **575 seconds**.
+
+Cost profile: 28-32 s per stage-1 epoch when both backbones are frozen, rising to 35-37 s in stage 2
+once ResNet50 `layer4` and the last EfficientNet-B4 block group become trainable. Peak GPU memory
+observed was about 3.5 GiB of 24,564 MiB at batch 16 with two 384x384 backbones in the graph. The
+staged freeze plus OneCycleLR kept the run to 7 epochs and a mild plateau instead of the blow-up seen
+in Tasks 9 and 10: validation loss stayed inside 0.868-0.913 while train loss fell 0.7638 -> 0.5574.
+
+Two results worth carrying forward:
+
+* The vessel result is the most robust finding in the whole series. M1 - M0 AUC was +0.020936
+  [+0.011426, +0.030828], p < 0.0001 - the largest vessel contribution measured anywhere, larger
+  than Task 8B's +0.0079 for E - B. Spatial vascular morphology keeps adding information even after
+  the RGB side is replaced by a two-backbone attention model.
+* The ROPDeepX-style RGB representation itself did not help: M0 - B_EMBEDDING_ONLY AUC was
+  -0.018925, p = 0.0063, i.e. significantly worse than the project's original single-backbone
+  EfficientNet-B5 embedding on this cohort. Selection landed on a stage-1 checkpoint, so the
+  fine-tuning stages never paid off on validation either.
+
+Attention did not collapse (mean a_resnet 0.5335 validation, 0.5111 test, threshold 0.95) but it is
+effectively near-binary per image - std ~0.39 with p05 ~0.01 and p95 ~0.99 - and it is strongly
+source-dependent (mean a_resnet 0.71 on plus, 0.19 on farfum_rop, 0.04 on farabi). Reading the
+attention as a clinical quantity would import an acquisition confound; it is reported as a
+diagnostic only and was never used for selection.
+
+The canonical split fingerprint is the SHA-256 of `data/splits/all.csv` (8,870 rows), which lives on
+Server 1 only, so Server 1 recomputed it during this task and it matched. Server 2 re-verified the
+population, split counts, label set and group disjointness against the 8,862-row complete-case
+manifest. Class weights recomputed from canonical TRAIN alone came out at 0.46050 / 3.18103 /
+1.94512 - identical to the frozen Task-6 weights, an independent confirmation that those were
+inverse-frequency on this same train population.

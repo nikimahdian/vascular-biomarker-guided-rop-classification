@@ -1,0 +1,86 @@
+[
+  {
+    "epoch": 1,
+    "stage": 1,
+    "train_loss": 0.7638224541986943,
+    "val_loss": 0.9127260396279484,
+    "val_auc": 0.8398820477669394,
+    "val_macro_f1": 0.5417087537494111,
+    "attn_resnet_mean": 0.48223260045051575,
+    "attn_effnet_mean": 0.5177673697471619,
+    "seconds": 32.4,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage1_epoch1.pth"
+  },
+  {
+    "epoch": 2,
+    "stage": 1,
+    "train_loss": 0.6606865962654429,
+    "val_loss": 0.8718185482254948,
+    "val_auc": 0.8662357013695781,
+    "val_macro_f1": 0.5752487562189055,
+    "attn_resnet_mean": 0.5335198044776917,
+    "attn_effnet_mean": 0.4664802551269531,
+    "seconds": 29.0,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage1_epoch2.pth"
+  },
+  {
+    "epoch": 3,
+    "stage": 1,
+    "train_loss": 0.6257182892594843,
+    "val_loss": 0.9026049720235618,
+    "val_auc": 0.8577222732413001,
+    "val_macro_f1": 0.5965858630623534,
+    "attn_resnet_mean": 0.5015567541122437,
+    "attn_effnet_mean": 0.49844324588775635,
+    "seconds": 28.2,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage1_epoch3.pth"
+  },
+  {
+    "epoch": 4,
+    "stage": 2,
+    "train_loss": 0.5770667410944167,
+    "val_loss": 0.8741787679224129,
+    "val_auc": 0.8544881173970542,
+    "val_macro_f1": 0.5978404613474106,
+    "attn_resnet_mean": 0.5525074005126953,
+    "attn_effnet_mean": 0.4474925696849823,
+    "seconds": 36.9,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage2_epoch4.pth"
+  },
+  {
+    "epoch": 5,
+    "stage": 2,
+    "train_loss": 0.5768773688210381,
+    "val_loss": 0.8711086310536028,
+    "val_auc": 0.8590389014331805,
+    "val_macro_f1": 0.6136111312461501,
+    "attn_resnet_mean": 0.5908409953117371,
+    "attn_effnet_mean": 0.40915900468826294,
+    "seconds": 35.0,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage2_epoch5.pth"
+  },
+  {
+    "epoch": 6,
+    "stage": 2,
+    "train_loss": 0.5645373019291141,
+    "val_loss": 0.8761933194585594,
+    "val_auc": 0.8513217260024298,
+    "val_macro_f1": 0.6040687522731063,
+    "attn_resnet_mean": 0.6003978252410889,
+    "attn_effnet_mean": 0.39960214495658875,
+    "seconds": 34.1,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage2_epoch6.pth"
+  },
+  {
+    "epoch": 7,
+    "stage": 2,
+    "train_loss": 0.5574358578492197,
+    "val_loss": 0.8683294840605862,
+    "val_auc": 0.8401431331164958,
+    "val_macro_f1": 0.6040158381584423,
+    "attn_resnet_mean": 0.6343594193458557,
+    "attn_effnet_mean": 0.3656406104564667,
+    "seconds": 34.6,
+    "ckpt": "/root/niki_rop_task6_isolated/artifacts/task13_ropdeepx_style/L_stage2_epoch7.pth"
+  }
+]

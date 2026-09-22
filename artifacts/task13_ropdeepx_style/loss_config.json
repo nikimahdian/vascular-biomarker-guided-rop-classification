@@ -1,0 +1,21 @@
+{
+  "class_names": [
+    "Normal",
+    "Pre_Plus",
+    "Plus"
+  ],
+  "weights": [
+    0.46050482553823313,
+    3.181025641025641,
+    1.9451238632800252
+  ],
+  "computed_on": "canonical TRAIN only",
+  "n_train": 6203,
+  "train_class_counts": [
+    4490,
+    650,
+    1063
+  ],
+  "label_smoothing": 0.05,
+  "batch_size": 16
+}

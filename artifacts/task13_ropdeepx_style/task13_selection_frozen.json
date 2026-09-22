@@ -1,0 +1,23 @@
+{
+  "TASK13_ALL_SELECTION_FROZEN": true,
+  "TASK13_TEST_TOUCHED": false,
+  "L_SELECTED_CHECKPOINT_FROZEN": true,
+  "L_checkpoint_sha256": "42dc5239739a4f00ffaaa22b2dec8916fcfdca4032a29d28edad1386c431551d",
+  "L_selected_epoch": 2,
+  "L_selected_val_auc": 0.8662357013695781,
+  "ropdeepx_embedding_sha256": "f73572c6dcf6df81ba2b40bb78a43bfcbcca72c349376cd85ba97c64934a15fd",
+  "M0_frozen": true,
+  "M1_frozen": true,
+  "xgboost_config_unchanged": {
+    "n_estimators": 500,
+    "max_depth": 3,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 1,
+    "reg_lambda": 1.0
+  },
+  "batch_size": 16,
+  "seed": 42,
+  "no_biomarkers": true
+}
